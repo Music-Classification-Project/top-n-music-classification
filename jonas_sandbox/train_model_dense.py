@@ -84,4 +84,4 @@ loss, accuracy = model.evaluate(X_test, y_test)
 print(f"Test accuracy: {accuracy:.2f}")
 
 # Save model for later inference
-model.save("jonas_sandbox/music_genre_model.h5")
+model.save("jonas_sandbox/music_genre_model_dense.h5")
