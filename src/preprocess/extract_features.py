@@ -44,7 +44,10 @@ def extract_features_from_file(file_path: str,
             )
 
         # Convert to decibels for better numerical stability
-        features["mel_spec"] = librosa.power_to_db(mel_spec, ref=np.max)
+        features["mel_spec"] = librosa.power_to_db(mel_spec, ref=np.max,
+                                                   n_fft=config["n_fft"],
+                                                   hop_length=config[
+                                                       "hop_length"])
 
     if config["use_chroma"]:
         features["chroma"] = librosa.feature.chroma_stft(y=audio_array,
