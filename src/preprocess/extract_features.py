@@ -78,7 +78,7 @@ def extract_features(input_dir: str, output_dir: str, config: Dict[str, Any]):
 
                 output_filepath = os.path.join(genre_output_path,
                                                file.replace(".wav", ".npy"))
-                np.save(output_filepath, features)
+                np.savez(output_filepath.replace(".npy", ".npz"), **features)
 
                 # Add info to metadata
                 metadata.append({
