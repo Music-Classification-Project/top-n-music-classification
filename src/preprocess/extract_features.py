@@ -18,7 +18,7 @@ def extract_features_from_file(file_path: str,
     Returns:
         Dict[str, np.ndarray]: A dictionary where keys are feature names
         (e.g., "mfcc", "mel_spec") and values are the feature matrices.
-        
+
         Example Shapes:
          - "mfcc": (n_mfcc, number of frames)
          - "mel_spec": (n_mels, number of frames)
