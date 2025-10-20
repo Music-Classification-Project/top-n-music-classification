@@ -1,15 +1,28 @@
 import librosa
 import numpy as np
 import os
-import warnings
+from tqdm import tqdm
+import json
+from typing import Dict, Any
 
 
-def extract_features_from_file(file_path, config):
+def extract_features_from_file(file_path: str,
+                               config: Dict[str, Any]
+                               ) -> Dict[str, np.ndarray]:
     """Extracts features (MFCC, Mel, or Chroma) from a single audio file.
-    Returns an dictionary:
-        {"mfcc" : <Type: numpy.ndarray: Shape: (n_mfcc, number of frames)>,
-        "mel_spec" : <Type: numpy.ndarray, Shape: (n_mels, number of frames) >,
-        "chroma" : <Type: numpy.ndarray, Shape: (12, number of frames)>}
+
+    Args:
+        file_path (str): Path to the audio file.
+        config (Dict[str, Any]): Configuration dictionary.
+
+    Returns:
+        Dict[str, np.ndarray]: A dictionary where keys are feature names
+        (e.g., "mfcc", "mel_spec") and values are the feature matrices.
+        
+        Example Shapes:
+         - "mfcc": (n_mfcc, number of frames)
+         - "mel_spec": (n_mels, number of frames)
+         - "chroma": (12, number of frames)
     """
     audio_array, sample_rate = librosa.load(file_path,
                                             sr=config["sample_rate"])
@@ -25,7 +38,7 @@ def extract_features_from_file(file_path, config):
         mel_spec = librosa.feature.melspectrogram(
             y=audio_array,
             sr=sample_rate,
-            n_fft=config["n_ftt"],
+            n_fft=config["n_fft"],
             hop_length=config["hop_length"],
             n_mels=config["n_mels"]
             )
@@ -40,9 +53,10 @@ def extract_features_from_file(file_path, config):
     return features
 
 
-def extract_features(input_dir, output_dir, config):
+def extract_features(input_dir: str, output_dir: str, config: Dict[str, Any]):
     """Loops through the dataset, extracts features, and saves them"""
     os.makedirs(output_dir, exist_ok=True)
+    metadata = []
 
     for genre in sorted(os.listdir(input_dir)):
         # Build the path to the input_dir/genre folder
@@ -54,27 +68,44 @@ def extract_features(input_dir, output_dir, config):
         genre_output_path = os.path.join(output_dir, genre)
         os.makedirs(genre_output_path, exist_ok=True)
 
-        for file in os.listdir(genre_input_path):
+        for file in tqdm(os.listdir(genre_input_path),
+                         desc=f"Processing {genre}"):
             input_filepath = os.path.join(genre_input_path, file)
 
             try:
+                # Extract and save features
                 features = extract_features_from_file(input_filepath, config)
 
                 output_filepath = os.path.join(genre_output_path,
                                                file.replace(".wav", ".npy"))
                 np.save(output_filepath, features)
+
+                # Add info to metadata
+                metadata.append({
+                    "genre": genre,
+                    "filename": file,
+                    "features": list(features.keys())
+                })
+
             except Exception as e:
                 print(f"Error processing {input_filepath}: {e}")
 
+    # Save metadata to output_dir/metadata.json
+    metadata_path = os.path.join(output_dir, "metadata.json")
+    with open(metadata_path, "w") as f:
+        json.dump(metadata, f, indent=2)
+
 
 if __name__ == "__main__":
+    import warnings
+
     # Ignore expected warnings
     warnings.filterwarnings("ignore", category=UserWarning)
     warnings.filterwarnings("ignore", category=FutureWarning)
 
     CONFIG = {
         "sample_rate": 22050,
-        "n_ftt": 2048,
+        "n_fft": 2048,
         "hop_length": 512,
         "n_mels": 128,
         "n_mfcc": 13,
