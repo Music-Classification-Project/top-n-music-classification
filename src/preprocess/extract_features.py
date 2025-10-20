@@ -44,19 +44,20 @@ def extract_features_from_file(file_path: str,
             )
 
         # Convert to decibels for better numerical stability
-        features["mel_spec"] = librosa.power_to_db(mel_spec, ref=np.max,
-                                                   n_fft=config["n_fft"],
-                                                   hop_length=config[
-                                                       "hop_length"])
+        features["mel_spec"] = librosa.power_to_db(mel_spec, ref=np.max)
 
     if config["use_chroma"]:
         features["chroma"] = librosa.feature.chroma_stft(y=audio_array,
-                                                         sr=sample_rate)
+                                                         sr=sample_rate,
+                                                         n_fft=config["n_fft"],
+                                                         hop_length=config[
+                                                            "hop_length"])
 
     return features
 
 
-def extract_features(input_dir: str, output_dir: str, config: Dict[str, Any]):
+def extract_features(input_dir: str, output_dir: str, config: Dict[str, Any]
+                     ) -> None:
     """Loops through the dataset, extracts features, and saves them"""
     os.makedirs(output_dir, exist_ok=True)
     metadata = []
@@ -80,8 +81,8 @@ def extract_features(input_dir: str, output_dir: str, config: Dict[str, Any]):
                 features = extract_features_from_file(input_filepath, config)
 
                 output_filepath = os.path.join(genre_output_path,
-                                               file.replace(".wav", ".npy"))
-                np.savez(output_filepath.replace(".npy", ".npz"), **features)
+                                               file.replace(".wav", ".npz"))
+                np.savez(output_filepath, **features)
 
                 # Add info to metadata
                 metadata.append({
