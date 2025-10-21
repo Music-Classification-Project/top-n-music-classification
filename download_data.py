@@ -241,22 +241,31 @@ def download_dataset(name: str):
     if name == "gtzan":
         dir_path = "data/raw/genres_original"
         alt_dir_path = "data/raw/Data/genres_original"
-        if os.path.isdir(dir_path) or os.path.isdir(alt_dir_path):
-            print(f"The directory {dir_path} or {alt_dir_path} already exists! No need to download :)")
-            return False  # dataset already exists
+        if os.path.isdir(dir_path):
+            print(f"The directory {dir_path} already exists! No need to download :)")
+            output_path = dir_path
+            return {name: output_path}  # dataset downloaded
+            # return False # dataset already exists
+        elif os.path.isdir(alt_dir_path):
+            print(f"The directory {alt_dir_path} already exists! No need to download :)")
+            output_path = alt_dir_path
+            return {name: output_path}  # dataset downloaded
+            # return False  # dataset already exists
         check_kaggle_auth()
         download_kaggle_dataset("GTZAN", KAGGLE_DATASETS["gtzan"])
-        return True  # dataset downloaded
+        return {name: output_path}  # dataset downloaded
     
     elif name == "msd":
         dir_path = "data/raw/MillionSongSubset"
         if os.path.isdir(dir_path):
             print(f"The directory {dir_path} already exists! No need to download :)")
             ensure_msd_additional_files()
-            return False
+            return {name: dir_path}
+            # return False
         download_external_dataset("Million Song Dataset", EXTERNAL_DATASETS["msd"])
         ensure_msd_additional_files()
-        return True
+        return {name: dir_path}
+        # return True 
 
     elif name == "all":
         gtzan_path = "data/raw/genres_original"
@@ -267,9 +276,10 @@ def download_dataset(name: str):
         msd_exists = os.path.isdir(msd_path)
 
         if gtzan_exists and msd_exists:
-            print(f"Both {gtzan_path} (or {gtzan_alt_path}) and {msd_path} already exist! No need to download :)")
+            gtzan_directory = gtzan_path if os.path.isdir(gtzan_path) else gtzan_alt_path
+            print(f"Both {gtzan_directory} and {msd_path} already exist! No need to download :)")
             ensure_msd_additional_files()
-            return False
+            return {"gtzan": gtzan_directory, "msd": msd_path}
 
         if not gtzan_exists:
             print("Downloading GTZAN dataset...")
