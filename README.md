@@ -1,13 +1,13 @@
 # top-n-music-classification
 
-File Structure:  
-data   
+### File Structure:  
+#### data   
     /raw       : Includes raw data.  
     /processed : Includes data after normalization.   
     /features  : Includes data after feature extraction.  
-docs   
+#### docs   
     Includes documentation.   
-src  
+#### src  
     /preprocess : Files needed for data pipeline to load and process data.    
         /download_data.py    : Downloads datasets.    
         /preprocess_data.py  : Cleans and preprocesses data.    
