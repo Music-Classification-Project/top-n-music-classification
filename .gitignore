@@ -2,5 +2,5 @@ venv/
 .vscode
 .DS_Store
 data/.DS_Store
-.env
+env
 raw/
