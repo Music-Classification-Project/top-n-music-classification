@@ -59,7 +59,8 @@ def batch_normalize(input_dir, output_dir):
         if not output_path.exists():
             normalize_audio(file, output_dir)
 
-    print('\nBatch processing complete')
+    # print('\nBatch processing complete')
+    return output_dir
     
 
 if __name__ == '__main__':

@@ -4,7 +4,7 @@ import sys
 import time
 import download_data as download_data
 import extract_features as extract_features
-# import normalize_data as normalize_data # Does not exist yet 
+import preprocess_data as normalize_data # Does not exist yet 
 import yaml
 import os
 from pathlib import Path
@@ -26,7 +26,7 @@ def run_processing(function=None, input_path=None, output_path=None,
         return download_data_path
     # Call normalize_data function
     elif function == "normalize":
-        normalized_file_path = normalize_data.normalize_dataset(input_path)
+        normalized_file_path = normalize_data.batch_normalize(input_path, output_path)
         return normalized_file_path
     # Call extract_features function
     elif function == "extract":
@@ -34,6 +34,11 @@ def run_processing(function=None, input_path=None, output_path=None,
         return features_file_path
     else:
         return None
+    
+def get_directories_in_folder(directory=Path.cwd().parents[1]/"data"):
+    """Get list of directories in the current folder."""
+    directories = [f.name for f in os.scandir(directory) if f.is_dir()]
+    return directories
 
 def get_download_dataset_input():
     """Get user input for dataset to download."""
@@ -87,6 +92,64 @@ def argument_parser():
     parser.add_argument("--extract", action="store_true", help="Run the extract command")
     return parser.parse_args()
 
+def download_function():
+    print("Downloading data...")
+    download_output_directories = run_processing("download")
+    print(f"Datasets downloaded: {download_output_directories.keys()}")
+    return download_output_directories
+
+def normalize_function(name, input_path, normalized_output_directories={}):
+    output_path = "../../data/processed" + f"/{name}"
+    print(input)
+    normalized_output_path = run_processing("normalize", input_path=input_path, output_path=output_path)
+    normalized_output_directories[name] = normalized_output_path
+    print(f"Data normalized for {name}: {normalized_output_path}")
+    return normalized_output_directories
+
+def extract_function(name, input_path, extracted_output_directories={}, config=config_loader("config.yaml")):
+    output_path = "../../data/features" + f"/{name}"
+    extract_output_directory = run_processing("extract", input_path=input_path, 
+                                            output_path=output_path, config=config)
+    extracted_output_directories[name] = extract_output_directory
+    print(f"Features extracted for {name}: {extract_output_directory}")
+    return extracted_output_directories
+
+def actions_based_on_commands():
+    args = argument_parser()
+    if not any([args.download, args.normalize, args.extract]):
+        print("No command provided. Please use --download, --normalize, or --extract.")
+
+    elif args.download and args.normalize and args.extract:
+        print("Running download, normalize, and extract commands...")
+        
+        # Download
+        download_output_directories = run_processing("download")
+        print(f"Datasets downloaded: {download_output_directories.keys()}")
+        
+        # Normalize
+        normalized_output_directories = {}
+        for name, download_output_directory in download_output_directories.items():
+            # input_path = get_input_file_path("normalize", download_output_directory)
+            input_path = download_output_directory
+            output_path = "../../data/processed" + f"/{name}"
+            print(input_path)
+            normalized_output_path = run_processing("normalize", input_path=input_path, output_path=output_path)
+            normalized_output_directories[name] = normalized_output_path
+            print(f"Data normalized for {name}: {normalized_output_path}")
+            
+        # Extract
+        extracted_output_directories = {}
+        for name, normalized_output_path in normalized_output_directories.items():
+            # input_path = get_input_file_path("extract", normalized_output_path)
+            input_path = normalized_output_path
+            output_path = "../../data/features" + f"/{name}"
+            extract_output_directory = run_processing("extract", input_path=input_path, 
+                                                    output_path=output_path, config=config_loader("config.yaml"))
+            extracted_output_directories[name] = extract_output_directory
+            print(f"Features extracted for {name}: {extract_output_directory}")
+        
+        final_directories = extracted_output_directories
+
 def main():
     # Initialize variables to hold output paths
     download_output_directory = ""
@@ -101,14 +164,19 @@ def main():
     # Download Function
     if args.download:
         print("Downloading data...")
-        download_output_directory = run_processing("download")
-        final_directory = download_output_directory
+        download_output_directories = run_processing("download")
+        download_output_directories = download_output_directory
+        print(f"Datasets downloaded: {download_output_directories.keys()}")
+        final_directories = download_output_directories
     # Normalize Function
     if args.normalize:
         print("Normalizing data...")
-        input_path = get_input_file_path("normalize", download_output_directory)
-        normalized_output_path = run_processing("normalize", input_path=input_path)
-        final_directory = normalized_output_path
+        for name, download_output_directory in download_output_directories.items():
+            input_path = get_input_file_path("normalize", download_output_directory)
+            output_path = "../../data/processed"
+            print(input_path)
+            normalized_output_path = run_processing("normalize", input_path=input_path, output_path=output_path)
+            final_directory = normalized_output_path
     # Extract Function
     if args.extract:
         print("Extracting features...")
@@ -121,4 +189,5 @@ def main():
     return final_directory # Path of final output files for next step 
 
 if __name__ == "__main__":
-    main()
+    #main()
+    print(get_directories_in_folder())
