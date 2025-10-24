@@ -23,6 +23,10 @@ def run_processing(function=None, input_path=None, output_path=None,
     if function == "download":
         dataset_input = get_download_dataset_input()
         download_data_path = download_data.download_dataset(dataset_input)
+        # if download_data_path.get("gtzan") != "../../data/raw/gtzan":
+        #     os.rename("../../data/raw/Data", "../../data/raw/gtzan")
+        #     download_data_path["gtzan"] = "../../data/raw/gtzan"
+        # print(download_data_path)
         return download_data_path
     # Call normalize_data function
     elif function == "normalize":
@@ -35,10 +39,17 @@ def run_processing(function=None, input_path=None, output_path=None,
     else:
         return None
     
-def get_directories_in_folder(directory=Path.cwd().parents[1]/"data"):
+def get_directories_in_folder(function="normalize"):
     """Get list of directories in the current folder."""
-    directories = [f.name for f in os.scandir(directory) if f.is_dir()]
-    return directories
+    if function == "normalize":
+        directory = Path.cwd().parents[1]/"data"/"raw"
+    elif function == "extract":
+        directory = Path.cwd().parents[1]/"data"/"processed"
+    directory_output = {}
+    for f in os.scandir(directory):
+        if f.is_dir():
+            directory_output[f.name] = f.path
+    return(directory_output)
 
 def get_download_dataset_input():
     """Get user input for dataset to download."""
@@ -48,42 +59,6 @@ def get_download_dataset_input():
         if dataset_input not in ["gtzan", "msd", "all"]:
             print("Invalid input. Please enter 'gtzan', 'msd', or 'all'.")
     return dataset_input
-
-def get_input_file_path(path_input_type, input_path=""):
-    """Get user input for file path."""
-    normalize_path = "data/raw"
-    extract_path = "data/processed"
-    
-    if input_path != "":
-        return input_path
-    
-    parent_directory = Path.cwd().parents[1]
-
-    while True:
-        if path_input_type == "normalize":
-            approved_input_path = input(f"Use default normalize path {normalize_path}? (y/n): ")
-        elif path_input_type == "extract":
-            approved_input_path = input(f"Use default extract path {extract_path}? (y/n): ")
-        else:
-            print("No valid path input type provided.")
-            return
-
-        if approved_input_path.lower() == "y":
-            input_path = parent_directory/normalize_path if path_input_type == "normalize" else parent_directory/extract_path
-            return input_path
-        elif approved_input_path.lower() == "n":
-            while True:
-                file_path = input("Enter the input file path: ")
-                file_path = parent_directory/file_path
-                if os.path.isdir(file_path):
-                    approve_path = input(f"Use {file_path} as the input path? (y/n): ")
-                    if approve_path.lower() == "y":
-                        break
-                else:
-                    print("The provided path does not exist or is not a directory. Please try again.")
-            return file_path
-        else:
-            print("Invalid input. Please enter 'y' or 'n'.")
         
 def argument_parser():
     parser = argparse.ArgumentParser(description="Processing tool to download, normalize, and extract data all at once.")
@@ -92,42 +67,27 @@ def argument_parser():
     parser.add_argument("--extract", action="store_true", help="Run the extract command")
     return parser.parse_args()
 
-def download_function():
-    print("Downloading data...")
-    download_output_directories = run_processing("download")
-    print(f"Datasets downloaded: {download_output_directories.keys()}")
-    return download_output_directories
-
-def normalize_function(name, input_path, normalized_output_directories={}):
-    output_path = "../../data/processed" + f"/{name}"
-    print(input)
-    normalized_output_path = run_processing("normalize", input_path=input_path, output_path=output_path)
-    normalized_output_directories[name] = normalized_output_path
-    print(f"Data normalized for {name}: {normalized_output_path}")
-    return normalized_output_directories
-
-def extract_function(name, input_path, extracted_output_directories={}, config=config_loader("config.yaml")):
-    output_path = "../../data/features" + f"/{name}"
-    extract_output_directory = run_processing("extract", input_path=input_path, 
-                                            output_path=output_path, config=config)
-    extracted_output_directories[name] = extract_output_directory
-    print(f"Features extracted for {name}: {extract_output_directory}")
-    return extracted_output_directories
-
-def actions_based_on_commands():
+def main():
     args = argument_parser()
     if not any([args.download, args.normalize, args.extract]):
         print("No command provided. Please use --download, --normalize, or --extract.")
+        return 
 
-    elif args.download and args.normalize and args.extract:
-        print("Running download, normalize, and extract commands...")
-        
+    download_output_directories = get_directories_in_folder(function="normalize")
+    normalized_output_directories = get_directories_in_folder(function="extract")
+
+    if args.download:        
         # Download
         download_output_directories = run_processing("download")
         print(f"Datasets downloaded: {download_output_directories.keys()}")
         
+        final_directories = download_output_directories
+
+    if args.normalize:
         # Normalize
         normalized_output_directories = {}
+        if download_output_directories == {}:
+            print("No downloaded datasets found. Please run the download command first.")
         for name, download_output_directory in download_output_directories.items():
             # input_path = get_input_file_path("normalize", download_output_directory)
             input_path = download_output_directory
@@ -137,8 +97,12 @@ def actions_based_on_commands():
             normalized_output_directories[name] = normalized_output_path
             print(f"Data normalized for {name}: {normalized_output_path}")
             
+        final_directories = normalized_output_directories
         # Extract
+    if args.extract:
         extracted_output_directories = {}
+        if normalized_output_directories == {}:
+            print("No normalized datasets found. Please run the normalize command first.")
         for name, normalized_output_path in normalized_output_directories.items():
             # input_path = get_input_file_path("extract", normalized_output_path)
             input_path = normalized_output_path
@@ -149,45 +113,46 @@ def actions_based_on_commands():
             print(f"Features extracted for {name}: {extract_output_directory}")
         
         final_directories = extracted_output_directories
+    
+    return final_directories
 
-def main():
-    # Initialize variables to hold output paths
-    download_output_directory = ""
-    normalized_output_directory = ""
-    extract_output_directory = ""
-    final_directory = ""
-    # Get command line arguments
-    args = argument_parser()
-    # Load configuration
-    config = config_loader("config.yaml")
-    # Execute functions based on arguments
-    # Download Function
-    if args.download:
-        print("Downloading data...")
-        download_output_directories = run_processing("download")
-        download_output_directories = download_output_directory
-        print(f"Datasets downloaded: {download_output_directories.keys()}")
-        final_directories = download_output_directories
-    # Normalize Function
-    if args.normalize:
-        print("Normalizing data...")
-        for name, download_output_directory in download_output_directories.items():
-            input_path = get_input_file_path("normalize", download_output_directory)
-            output_path = "../../data/processed"
-            print(input_path)
-            normalized_output_path = run_processing("normalize", input_path=input_path, output_path=output_path)
-            final_directory = normalized_output_path
-    # Extract Function
-    if args.extract:
-        print("Extracting features...")
-        input_path = get_input_file_path("extract", normalized_output_directory)
-        output_path = "../../data/features"
-        extract_output_directory = run_processing("extract", input_path=input_path, 
-                                                    output_path=output_path, config=config)
-        final_directory = extract_output_directory
+# We may not need this function, we are passing paths directly
 
-    return final_directory # Path of final output files for next step 
+# def get_input_file_path(path_input_type, input_path=""):
+#     """Get user input for file path."""
+#     normalize_path = "data/raw"
+#     extract_path = "data/processed"
+    
+#     if input_path != "":
+#         return input_path
+    
+#     parent_directory = Path.cwd().parents[1]
+
+#     while True:
+#         if path_input_type == "normalize":
+#             approved_input_path = input(f"Use default normalize path {normalize_path}? (y/n): ")
+#         elif path_input_type == "extract":
+#             approved_input_path = input(f"Use default extract path {extract_path}? (y/n): ")
+#         else:
+#             print("No valid path input type provided.")
+#             return
+
+#         if approved_input_path.lower() == "y":
+#             input_path = parent_directory/normalize_path if path_input_type == "normalize" else parent_directory/extract_path
+#             return input_path
+#         elif approved_input_path.lower() == "n":
+#             while True:
+#                 file_path = input("Enter the input file path: ")
+#                 file_path = parent_directory/file_path
+#                 if os.path.isdir(file_path):
+#                     approve_path = input(f"Use {file_path} as the input path? (y/n): ")
+#                     if approve_path.lower() == "y":
+#                         break
+#                 else:
+#                     print("The provided path does not exist or is not a directory. Please try again.")
+#             return file_path
+#         else:
+#             print("Invalid input. Please enter 'y' or 'n'.")
 
 if __name__ == "__main__":
-    #main()
-    actions_based_on_commands()
+    main()

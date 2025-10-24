@@ -45,7 +45,7 @@ except Exception:
 
 CURRENT_DIRECTORY = Path.cwd()
 OUTPUT_PATH = CURRENT_DIRECTORY.parents[1]
-print(f"Output path set to: {OUTPUT_PATH}")
+# print(f"Output path set to: {OUTPUT_PATH}")
 DATA_DIR = OUTPUT_PATH / "data"
 RAW_DIR = DATA_DIR / "raw"
 
@@ -286,6 +286,7 @@ def download_dataset(name: str):
             return {"gtzan": gtzan_directory, "msd": msd_path}
 
         if not gtzan_exists:
+            gtzan_directory = gtzan_path if os.path.isdir(gtzan_path) else gtzan_alt_path
             print("Downloading GTZAN dataset...")
             check_kaggle_auth()
             download_kaggle_dataset("GTZAN", KAGGLE_DATASETS["gtzan"])
@@ -297,7 +298,7 @@ def download_dataset(name: str):
         else:
             ensure_msd_additional_files()
 
-        return True
+        return {"gtzan": gtzan_directory, "msd": msd_path}
 
     else:
         print("Unknown dataset name. Options: gtzan, msd, all")
