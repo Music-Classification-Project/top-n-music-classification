@@ -63,7 +63,8 @@ def extract_features(input_dir: str, output_dir: str, config: Dict[str, Any]
     metadata = []
 
     if not os.path.isdir(input_dir):
-        print(f"Input directory {input_dir} does not exist, skipping directory.")
+        print(
+            f"Input directory {input_dir} does not exist, skipping directory.")
         return output_dir
 
     for genre in sorted(os.listdir(input_dir)):
@@ -105,6 +106,7 @@ def extract_features(input_dir: str, output_dir: str, config: Dict[str, Any]
 
     return output_dir
 
+
 if __name__ == "__main__":
     import warnings
 
@@ -123,7 +125,6 @@ if __name__ == "__main__":
         "use_chroma": False
     }
 
-    #input_dir = "data/raw/gtzan"  # TODO: Update to "data/processed" later
-    input_dir = "../../data/processed"
+    input_dir = "../../data/processed/gtzan"
     output_dir = "../../data/features/gtzan"
     extract_features(input_dir, output_dir, CONFIG)
