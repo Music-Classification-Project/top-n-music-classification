@@ -6,3 +6,4 @@ env
 raw/
 /venv 
 data
+__pycache__/
