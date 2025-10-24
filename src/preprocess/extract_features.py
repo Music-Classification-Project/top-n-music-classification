@@ -119,6 +119,7 @@ if __name__ == "__main__":
         "use_chroma": False
     }
 
-    input_dir = "data/raw/gtzan"  # TODO: Update to "data/processed" later
-    output_dir = "data/features"
+    #input_dir = "data/raw/gtzan"  # TODO: Update to "data/processed" later
+    input_dir = "../../data/processed"
+    output_dir = "../../data/features/gtzan"
     extract_features(input_dir, output_dir, CONFIG)

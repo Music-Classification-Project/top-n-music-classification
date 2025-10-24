@@ -190,4 +190,4 @@ def main():
 
 if __name__ == "__main__":
     #main()
-    print(get_directories_in_folder())
+    actions_based_on_commands()
