@@ -99,6 +99,7 @@ def extract_features(input_dir: str, output_dir: str, config: Dict[str, Any]
     with open(metadata_path, "w") as f:
         json.dump(metadata, f, indent=2)
 
+    return output_dir
 
 if __name__ == "__main__":
     import warnings
@@ -118,6 +119,7 @@ if __name__ == "__main__":
         "use_chroma": False
     }
 
-    input_dir = "data/raw/gtzan"  # TODO: Update to "data/processed" later
-    output_dir = "data/features"
+    #input_dir = "data/raw/gtzan"  # TODO: Update to "data/processed" later
+    input_dir = "../../data/processed"
+    output_dir = "../../data/features/gtzan"
     extract_features(input_dir, output_dir, CONFIG)

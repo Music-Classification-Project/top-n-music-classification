@@ -3,80 +3,191 @@ import random
 import sys
 import time
 import download_data as download_data
+import extract_features as extract_features
+import preprocess_data as normalize_data # Does not exist yet 
+import yaml
+import os
+from pathlib import Path
 
-#!/usr/bin/env python3
-"""
 
-"""
+def config_loader(config_path: str) -> dict:
+    """Load configuration from a YAML file."""
+    with open(config_path, 'r') as file:
+        config = yaml.safe_load(file)
+    return config
 
-# 1. User input: Which dataset to download? 
-# 2. Config YAML for inputs that the user does not input. 
-    # Potentially allow this to be editable via command line
-# 3. 
+def run_processing(function=None, input_path=None, output_path=None, 
+                     config=config_loader("config.yaml")):
+    """Wrapper function to call other functions."""
+    # Call download_data function
+    if function == "download":
+        dataset_input = get_download_dataset_input()
+        download_data_path = download_data.download_dataset(dataset_input)
+        return download_data_path
+    # Call normalize_data function
+    elif function == "normalize":
+        normalized_file_path = normalize_data.batch_normalize(input_path, output_path)
+        return normalized_file_path
+    # Call extract_features function
+    elif function == "extract":
+        features_file_path = extract_features.extract_features(input_path, output_path, config)
+        return features_file_path
+    else:
+        return None
+    
+def get_directories_in_folder(directory=Path.cwd().parents[1]/"data"):
+    """Get list of directories in the current folder."""
+    directories = [f.name for f in os.scandir(directory) if f.is_dir()]
+    return directories
 
-def download_data_main():
-    """Run download_data function."""
-    # Call the actual download function here
+def get_download_dataset_input():
+    """Get user input for dataset to download."""
     dataset_input = ""
     while dataset_input not in ["gtzan", "msd", "all"]:
         dataset_input = input("Enter the dataset to download (gtzan|msd|all): ")
         if dataset_input not in ["gtzan", "msd", "all"]:
             print("Invalid input. Please enter 'gtzan', 'msd', or 'all'.")
-    new_file_path = download_data.download_dataset(dataset_input)
-    # download_data_function(dataset_input)
-    # Pass input from user in main function to download_data function
-    # Output: File path (data/raw) 
-    return new_file_path
+    return dataset_input
 
-def normalize_data_main(file_path=""):
-    """Run normalize_data function."""
-    # If file path is empty, request a path 
-    if not file_path:
-        file_path = input("Enter the file path to normalize data: ")
-        return file_path
-    # Normalize data 
-    # Pass in file path from download_data function
-    # Output: Normalized data file path
+def get_input_file_path(path_input_type, input_path=""):
+    """Get user input for file path."""
+    normalize_path = "data/raw"
+    extract_path = "data/processed"
+    
+    if input_path != "":
+        return input_path
+    
+    parent_directory = Path.cwd().parents[1]
 
-def extract_data_main(file_path): 
-    """Run extract_data function."""
-    # If file path is empty, request a path 
-    if not file_path:
-        file_path = input("Enter the file path to extract features from: ")
-        return file_path
-    # Extract features from normalized data
-    # Pass in normalized data file path from normalize_data function
-    # Output: Extracted features file path
+    while True:
+        if path_input_type == "normalize":
+            approved_input_path = input(f"Use default normalize path {normalize_path}? (y/n): ")
+        elif path_input_type == "extract":
+            approved_input_path = input(f"Use default extract path {extract_path}? (y/n): ")
+        else:
+            print("No valid path input type provided.")
+            return
 
-def main():
+        if approved_input_path.lower() == "y":
+            input_path = parent_directory/normalize_path if path_input_type == "normalize" else parent_directory/extract_path
+            return input_path
+        elif approved_input_path.lower() == "n":
+            while True:
+                file_path = input("Enter the input file path: ")
+                file_path = parent_directory/file_path
+                if os.path.isdir(file_path):
+                    approve_path = input(f"Use {file_path} as the input path? (y/n): ")
+                    if approve_path.lower() == "y":
+                        break
+                else:
+                    print("The provided path does not exist or is not a directory. Please try again.")
+            return file_path
+        else:
+            print("Invalid input. Please enter 'y' or 'n'.")
+        
+def argument_parser():
     parser = argparse.ArgumentParser(description="Processing tool to download, normalize, and extract data all at once.")
     parser.add_argument("--download", action="store_true", help="Run the download command")
     parser.add_argument("--normalize", action="store_true", help="Run the normalize command")
     parser.add_argument("--extract", action="store_true", help="Run the extract command")
-    args = parser.parse_args()  # Example argument for testing
+    return parser.parse_args()
+
+def download_function():
+    print("Downloading data...")
+    download_output_directories = run_processing("download")
+    print(f"Datasets downloaded: {download_output_directories.keys()}")
+    return download_output_directories
+
+def normalize_function(name, input_path, normalized_output_directories={}):
+    output_path = "../../data/processed" + f"/{name}"
+    print(input)
+    normalized_output_path = run_processing("normalize", input_path=input_path, output_path=output_path)
+    normalized_output_directories[name] = normalized_output_path
+    print(f"Data normalized for {name}: {normalized_output_path}")
+    return normalized_output_directories
+
+def extract_function(name, input_path, extracted_output_directories={}, config=config_loader("config.yaml")):
+    output_path = "../../data/features" + f"/{name}"
+    extract_output_directory = run_processing("extract", input_path=input_path, 
+                                            output_path=output_path, config=config)
+    extracted_output_directories[name] = extract_output_directory
+    print(f"Features extracted for {name}: {extract_output_directory}")
+    return extracted_output_directories
+
+def actions_based_on_commands():
+    args = argument_parser()
+    if not any([args.download, args.normalize, args.extract]):
+        print("No command provided. Please use --download, --normalize, or --extract.")
+
+    elif args.download and args.normalize and args.extract:
+        print("Running download, normalize, and extract commands...")
+        
+        # Download
+        download_output_directories = run_processing("download")
+        print(f"Datasets downloaded: {download_output_directories.keys()}")
+        
+        # Normalize
+        normalized_output_directories = {}
+        for name, download_output_directory in download_output_directories.items():
+            # input_path = get_input_file_path("normalize", download_output_directory)
+            input_path = download_output_directory
+            output_path = "../../data/processed" + f"/{name}"
+            print(input_path)
+            normalized_output_path = run_processing("normalize", input_path=input_path, output_path=output_path)
+            normalized_output_directories[name] = normalized_output_path
+            print(f"Data normalized for {name}: {normalized_output_path}")
+            
+        # Extract
+        extracted_output_directories = {}
+        for name, normalized_output_path in normalized_output_directories.items():
+            # input_path = get_input_file_path("extract", normalized_output_path)
+            input_path = normalized_output_path
+            output_path = "../../data/features" + f"/{name}"
+            extract_output_directory = run_processing("extract", input_path=input_path, 
+                                                    output_path=output_path, config=config_loader("config.yaml"))
+            extracted_output_directories[name] = extract_output_directory
+            print(f"Features extracted for {name}: {extract_output_directory}")
+        
+        final_directories = extracted_output_directories
+
+def main():
+    # Initialize variables to hold output paths
     download_output_directory = ""
-    # Do we ever run extract without normalize?
     normalized_output_directory = ""
     extract_output_directory = ""
     final_directory = ""
+    # Get command line arguments
+    args = argument_parser()
+    # Load configuration
+    config = config_loader("config.yaml")
+    # Execute functions based on arguments
+    # Download Function
     if args.download:
         print("Downloading data...")
-        download_output_directory = download_data_main()
-        final_directory = download_output_directory
+        download_output_directories = run_processing("download")
+        download_output_directories = download_output_directory
+        print(f"Datasets downloaded: {download_output_directories.keys()}")
+        final_directories = download_output_directories
+    # Normalize Function
     if args.normalize:
         print("Normalizing data...")
-        if download_output_directory == "":
-            download_output_directory = input("Enter the file path to normalize data: ")   
-        normalized_output_directory = normalize_data_main(download_output_directory)
-        final_directory = normalized_output_directory
+        for name, download_output_directory in download_output_directories.items():
+            input_path = get_input_file_path("normalize", download_output_directory)
+            output_path = "../../data/processed"
+            print(input_path)
+            normalized_output_path = run_processing("normalize", input_path=input_path, output_path=output_path)
+            final_directory = normalized_output_path
+    # Extract Function
     if args.extract:
         print("Extracting features...")
-        if normalized_output_directory == "":
-            normalized_output_directory = input("Enter the file path to extract features from: ") 
-        extract_output_directory = extract_data_main(normalized_output_directory)
+        input_path = get_input_file_path("extract", normalized_output_directory)
+        output_path = "../../data/features"
+        extract_output_directory = run_processing("extract", input_path=input_path, 
+                                                    output_path=output_path, config=config)
         final_directory = extract_output_directory
 
     return final_directory # Path of final output files for next step 
 
 if __name__ == "__main__":
-    main()
+    #main()
+    actions_based_on_commands()

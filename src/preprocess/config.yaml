@@ -1,0 +1,10 @@
+CONFIG = {
+        "sample_rate":22050,
+        "n_fft":2048,
+        "hop_length":512,
+        "n_mels":128,
+        "n_mfcc":13,
+        "use_mfcc":True,
+        "use_mel":True,
+        "use_chroma":False,
+    }
