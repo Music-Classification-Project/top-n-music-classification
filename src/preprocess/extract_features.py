@@ -78,7 +78,7 @@ def extract_features(input_dir: str, output_dir: str, config: Dict[str, Any]
         os.makedirs(genre_output_path, exist_ok=True)
 
         for file in tqdm(os.listdir(genre_input_path),
-                         desc=f"Processing {genre}"):
+                         desc=f"Extracting features from {genre} directory"):
             input_filepath = os.path.join(genre_input_path, file)
 
             try:
