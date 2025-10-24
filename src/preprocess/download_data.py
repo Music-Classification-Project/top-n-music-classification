@@ -243,7 +243,7 @@ def download_dataset(name: str):
 
     if name == "gtzan":
         dir_path = "../../data/raw/genres_original"
-        alt_dir_path = "../../data/raw/Data/genres_original"
+        alt_dir_path = "../../data/raw/genres_original"
         if os.path.isdir(dir_path):
             print(f"The directory {dir_path} already exists! No need to download :)")
             output_path = dir_path
@@ -273,7 +273,7 @@ def download_dataset(name: str):
 
     elif name == "all":
         gtzan_path = "../../data/raw/genres_original"
-        gtzan_alt_path = "../../data/raw/Data/genres_original"
+        gtzan_alt_path = "../../data/raw/genres_original"
         msd_path = "../../data/raw/MillionSongSubset"
 
         gtzan_exists = os.path.isdir(gtzan_path) or os.path.isdir(gtzan_alt_path)

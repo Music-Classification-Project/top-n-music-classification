@@ -4,7 +4,7 @@ import sys
 import time
 import download_data as download_data
 import extract_features as extract_features
-import preprocess_data as normalize_data # Does not exist yet 
+import normalize_data as normalize_data # Does not exist yet 
 import yaml
 import os
 from pathlib import Path

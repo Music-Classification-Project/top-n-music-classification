@@ -67,6 +67,6 @@ def batch_normalize(input_dir, output_dir):
 
 if __name__ == '__main__':
     # Batch Testing
-    input_dir = './data/raw/'
-    output_dir = './data/processed'
+    input_dir = '../../data/raw/'
+    output_dir = '../../data/processed'
     batch_normalize(input_dir, output_dir)

@@ -120,6 +120,6 @@ if __name__ == "__main__":
     }
 
     #input_dir = "data/raw/gtzan"  # TODO: Update to "data/processed" later
-    input_dir = "../../data/processed"
+    input_dir = "../../data/processed/Data/genres_original"
     output_dir = "../../data/features/gtzan"
     extract_features(input_dir, output_dir, CONFIG)
