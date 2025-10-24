@@ -30,26 +30,46 @@ def run_processing(function=None, input_path=None, output_path=None,
         return download_data_path
     # Call normalize_data function
     elif function == "normalize":
+        print("Normalizing data from", input_path, "to", output_path)
         normalized_file_path = normalize_data.batch_normalize(input_path, output_path)
         return normalized_file_path
     # Call extract_features function
     elif function == "extract":
+        print("Extracting features from", input_path, "to", output_path)
         features_file_path = extract_features.extract_features(input_path, output_path, config)
         return features_file_path
     else:
         return None
     
-def get_directories_in_folder(function="normalize"):
+def get_directories_in_folder(function="normalize") -> set:
     """Get list of directories in the current folder."""
+    isfile = False
+    input_directories = {}
     if function == "normalize":
-        directory = Path.cwd().parents[1]/"data"/"raw"
+        highest_directory = Path.cwd().parents[1]/"data"/"raw" # Get to download folder
+        print("Highest Directory:", highest_directory)
+
     elif function == "extract":
-        directory = Path.cwd().parents[1]/"data"/"processed"
-    directory_output = {}
-    for f in os.scandir(directory):
-        if f.is_dir():
-            directory_output[f.name] = f.path
-    return(directory_output)
+        highest_directory = Path.cwd().parents[1]/"data"/"processed" # Get to normalize folder
+        print("Highest Directory:", highest_directory)
+
+    def recursive_search(directory):
+        nonlocal isfile
+        for new_path in directory.iterdir():
+            # print("Checking Path:", new_path)
+            if new_path.is_dir():
+                # print("Descending into Directory:", new_path)
+                recursive_search(new_path)
+            elif new_path.suffix.lower() in {'.wav','.mp3','.m4a','.ogg','.flac','.aac'}:
+                # print("Found File:", new_path)
+                isfile = True
+                
+                name = os.path.basename(new_path.parents[2])
+                input_directories[name] = new_path.parents[1]
+                return new_path.parents[1]
+    
+    recursive_search(highest_directory)
+    return input_directories
 
 def get_download_dataset_input():
     """Get user input for dataset to download."""
@@ -72,10 +92,7 @@ def main():
     if not any([args.download, args.normalize, args.extract]):
         print("No command provided. Please use --download, --normalize, or --extract.")
         return 
-
-    download_output_directories = get_directories_in_folder(function="normalize")
-    normalized_output_directories = get_directories_in_folder(function="extract")
-
+    
     if args.download:        
         # Download
         download_output_directories = run_processing("download")
@@ -85,6 +102,7 @@ def main():
 
     if args.normalize:
         # Normalize
+        download_output_directories = get_directories_in_folder(function="normalize")
         normalized_output_directories = {}
         if download_output_directories == {}:
             print("No downloaded datasets found. Please run the download command first.")
@@ -100,6 +118,7 @@ def main():
         final_directories = normalized_output_directories
         # Extract
     if args.extract:
+        normalized_output_directories = get_directories_in_folder(function="extract")
         extracted_output_directories = {}
         if normalized_output_directories == {}:
             print("No normalized datasets found. Please run the normalize command first.")

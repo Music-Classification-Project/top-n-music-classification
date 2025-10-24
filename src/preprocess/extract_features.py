@@ -24,6 +24,7 @@ def extract_features_from_file(file_path: str,
          - "mel_spec": (n_mels, number of frames)
          - "chroma": (12, number of frames)
     """
+    print("\r\nExtracting features from:\r\n", file_path)
     audio_array, sample_rate = librosa.load(file_path,
                                             sr=config["sample_rate"])
     features = {}
@@ -62,6 +63,10 @@ def extract_features(input_dir: str, output_dir: str, config: Dict[str, Any]
     os.makedirs(output_dir, exist_ok=True)
     metadata = []
 
+    if not os.path.isdir(input_dir):
+        print(f"Input directory {input_dir} does not exist, skipping directory.")
+        return output_dir
+
     for genre in sorted(os.listdir(input_dir)):
         # Build the path to the input_dir/genre folder
         genre_input_path = os.path.join(input_dir, genre)
@@ -75,12 +80,10 @@ def extract_features(input_dir: str, output_dir: str, config: Dict[str, Any]
         for file in tqdm(os.listdir(genre_input_path),
                          desc=f"Processing {genre}"):
             input_filepath = os.path.join(genre_input_path, file)
-            # print("file:", file, "input_filepath:", input_filepath)
 
             try:
                 # Extract and save features
                 features = extract_features_from_file(input_filepath, config)
-                print(features)
 
                 output_filepath = os.path.join(genre_output_path,
                                                file.replace(".wav", ".npz"))
