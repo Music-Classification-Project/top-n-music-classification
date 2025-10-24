@@ -24,7 +24,6 @@ def extract_features_from_file(file_path: str,
          - "mel_spec": (n_mels, number of frames)
          - "chroma": (12, number of frames)
     """
-    print("\r\nExtracting features from:\r\n", file_path)
     audio_array, sample_rate = librosa.load(file_path,
                                             sr=config["sample_rate"])
     features = {}
