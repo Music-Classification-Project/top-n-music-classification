@@ -62,6 +62,10 @@ def extract_features(input_dir: str, output_dir: str, config: Dict[str, Any]
     os.makedirs(output_dir, exist_ok=True)
     metadata = []
 
+    if not os.path.isdir(input_dir):
+        print(f"Input directory {input_dir} does not exist, skipping directory.")
+        return output_dir
+
     for genre in sorted(os.listdir(input_dir)):
         # Build the path to the input_dir/genre folder
         genre_input_path = os.path.join(input_dir, genre)

@@ -45,7 +45,7 @@ except Exception:
 
 CURRENT_DIRECTORY = Path.cwd()
 OUTPUT_PATH = CURRENT_DIRECTORY.parents[1]
-print(f"Output path set to: {OUTPUT_PATH}")
+# print(f"Output path set to: {OUTPUT_PATH}")
 DATA_DIR = OUTPUT_PATH / "data"
 RAW_DIR = DATA_DIR / "raw"
 
@@ -242,19 +242,25 @@ def download_dataset(name: str):
     # check if  already downloaded and repreat for msd/all
 
     if name == "gtzan":
-        dir_path = "../../data/raw/genres_original"
-        alt_dir_path = "../../data/raw/Data/genres_original"
+        dir_path = "../../data/raw/Data"
+        # alt_dir_path = "../../data/raw/Data/genres_original"
+        # alt_dir_path_2 = "../../data/raw/Data"
         if os.path.isdir(dir_path):
             print(f"The directory {dir_path} already exists! No need to download :)")
             output_path = dir_path
             return {name: output_path}  # dataset downloaded
             # return False # dataset already exists
-        elif os.path.isdir(alt_dir_path):
-            print(f"The directory {alt_dir_path} already exists! No need to download :)")
-            output_path = alt_dir_path
-            return {name: output_path}  # dataset downloaded
-            # return False  # dataset already exists
-        output_path = RAW_DIR
+        # elif os.path.isdir(alt_dir_path):
+        #     print(f"The directory {alt_dir_path} already exists! No need to download :)")
+        #     output_path = alt_dir_path
+        #     return {name: output_path}  # dataset downloaded
+        #     # return False  # dataset already exists
+        # elif os.path.isdir(alt_dir_path_2):
+        #     print(f"The directory {alt_dir_path_2} already exists! No need to download :)")
+        #     output_path = alt_dir_path_2
+        #     return {name: output_path}  # dataset downloaded
+        #     # return False  # dataset already exists
+        output_path = dir_path
         check_kaggle_auth()
         download_kaggle_dataset("GTZAN", KAGGLE_DATASETS["gtzan"])
         return {name: output_path}  # dataset downloaded
@@ -272,20 +278,24 @@ def download_dataset(name: str):
         # return True 
 
     elif name == "all":
-        gtzan_path = "../../data/raw/genres_original"
-        gtzan_alt_path = "../../data/raw/Data/genres_original"
+        gtzan_path = "../../data/raw/Data"
+        # gtzan_path = "../../data/raw/genres_original"
+        # gtzan_alt_path = "../../data/raw/Data/genres_original"
+        # gtzan_alt_path_2 = "../../data/raw/Data"
         msd_path = "../../data/raw/MillionSongSubset"
 
-        gtzan_exists = os.path.isdir(gtzan_path) or os.path.isdir(gtzan_alt_path)
+        gtzan_exists = os.path.isdir(gtzan_path)
         msd_exists = os.path.isdir(msd_path)
 
         if gtzan_exists and msd_exists:
-            gtzan_directory = gtzan_path if os.path.isdir(gtzan_path) else gtzan_alt_path
-            print(f"Both {gtzan_directory} and {msd_path} already exist! No need to download :)")
+            # gtzan_directory = gtzan_path if os.path.isdir(gtzan_path) else (gtzan_alt_path if os.path.isdir(gtzan_alt_path) else gtzan_alt_path_2)
+            print(f"Both {gtzan_path} and {msd_path} already exist! No need to download :)")
             ensure_msd_additional_files()
-            return {"gtzan": gtzan_directory, "msd": msd_path}
+            return {"gtzan": gtzan_path, "msd": msd_path}
 
         if not gtzan_exists:
+            # gtzan_directory = gtzan_path if os.path.isdir(gtzan_path) else (gtzan_alt_path if os.path.isdir(gtzan_alt_path) else gtzan_alt_path_2)
+            # gtzan_directory = gtzan_path
             print("Downloading GTZAN dataset...")
             check_kaggle_auth()
             download_kaggle_dataset("GTZAN", KAGGLE_DATASETS["gtzan"])
@@ -297,7 +307,7 @@ def download_dataset(name: str):
         else:
             ensure_msd_additional_files()
 
-        return True
+        return {"gtzan": gtzan_path, "msd": msd_path}
 
     else:
         print("Unknown dataset name. Options: gtzan, msd, all")
