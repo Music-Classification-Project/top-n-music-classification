@@ -20,9 +20,9 @@ def extract_features_from_file(file_path: str,
         (e.g., "mfcc", "mel_spec") and values are the feature matrices.
 
         Example Shapes:
-         - "mfcc": (n_mfcc, number of frames)
-         - "mel_spec": (n_mels, number of frames)
-         - "chroma": (12, number of frames)
+         - "mfcc": (n_mfcc, number of frames, channels)
+         - "mel_spec": (n_mels, number of frames, channels)
+         - "chroma": (12, number of frames, channels)
     """
     audio_array, sample_rate = librosa.load(file_path,
                                             sr=config["sample_rate"])
@@ -32,7 +32,8 @@ def extract_features_from_file(file_path: str,
         mfcc = librosa.feature.mfcc(y=audio_array, sr=sample_rate,
                                     n_mfcc=config["n_mfcc"],
                                     hop_length=config["hop_length"])
-        features["mfcc"] = mfcc
+
+        features["mfcc"] = np.expand_dims(mfcc, axis=-1)
 
     if config["use_mel"]:
         mel_spec = librosa.feature.melspectrogram(
@@ -44,14 +45,17 @@ def extract_features_from_file(file_path: str,
             )
 
         # Convert to decibels for better numerical stability
-        features["mel_spec"] = librosa.power_to_db(mel_spec, ref=np.max)
+        mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
+
+        features["mel_spec"] = np.expand_dims(mel_spec_db, axis=-1)
 
     if config["use_chroma"]:
-        features["chroma"] = librosa.feature.chroma_stft(y=audio_array,
-                                                         sr=sample_rate,
-                                                         n_fft=config["n_fft"],
-                                                         hop_length=config[
-                                                            "hop_length"])
+        chroma = librosa.feature.chroma_stft(y=audio_array, sr=sample_rate,
+                                             n_fft=config["n_fft"],
+                                             hop_length=config[
+                                              "hop_length"])
+
+        features["chroma"] = np.expand_dims(chroma, axis=-1)
 
     return features
 
