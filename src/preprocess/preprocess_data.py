@@ -46,30 +46,27 @@ def batch_normalize(input_dir, output_dir):
     input_dir = Path(input_dir)
     output_dir = Path(output_dir)
 
-    #Make output directory if it doesn't exist
-    output_dir.mkdir(parents=True, exist_ok=True)
-
     #Identify supported audio files
     supported_types = {'.wav','.mp3','.m4a','.ogg','.flac','.aac'}
     audio_files = [f for f in input_dir.rglob('*') if f.suffix.lower() in supported_types]
 
-    #Create normalized audio file if it doesn't already exist
     for file in tqdm(audio_files, desc = 'Normalizing audio files'):
-        output_path = output_dir/(file.stem + '_norm.wav')
-        if not output_path.exists():
-            normalize_audio(file, output_dir)
+        #Compute relative path to preserve file structure
+        rel_path = file.relative_to(input_dir)
+        rel_dir = rel_path.parent
+        target_dir = output_dir/rel_dir
+        target_dir.mkdir(parents=True,exist_ok=True)
+        output_path = target_dir/(file.stem + '_norm.wav')
 
-    # print('\nBatch processing complete')
+        #Skip if the normalized file already exists
+        if not output_path.exists():
+            normalize_audio(file, target_dir)
+
     return output_dir
     
 
 if __name__ == '__main__':
     # Batch Testing
-    # input_dir = './data/raw/'
-    # output_dir = './data/processed/test'
-    # batch_normalize(input_dir, output_dir)
-
-    # Various file type testing
-    input_path = './data/raw/mp3/Death March.mp3'
-    output_dir = './data/processed/test/mp3'
-    normalize_audio(input_path,output_dir)
+    input_dir = './data/raw/'
+    output_dir = './data/processed'
+    batch_normalize(input_dir, output_dir)
