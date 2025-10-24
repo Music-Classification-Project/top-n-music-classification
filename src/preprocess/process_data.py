@@ -4,7 +4,7 @@ import sys
 import time
 import download_data as download_data
 import extract_features as extract_features
-import preprocess_data as normalize_data # Does not exist yet 
+import normalize_data as normalize_data # Does not exist yet 
 import yaml
 import os
 from pathlib import Path
@@ -116,43 +116,38 @@ def main():
     
     return final_directories
 
-# We may not need this function, we are passing paths directly
-
-# def get_input_file_path(path_input_type, input_path=""):
-#     """Get user input for file path."""
-#     normalize_path = "data/raw"
-#     extract_path = "data/processed"
-    
-#     if input_path != "":
-#         return input_path
-    
-#     parent_directory = Path.cwd().parents[1]
-
-#     while True:
-#         if path_input_type == "normalize":
-#             approved_input_path = input(f"Use default normalize path {normalize_path}? (y/n): ")
-#         elif path_input_type == "extract":
-#             approved_input_path = input(f"Use default extract path {extract_path}? (y/n): ")
-#         else:
-#             print("No valid path input type provided.")
-#             return
-
-#         if approved_input_path.lower() == "y":
-#             input_path = parent_directory/normalize_path if path_input_type == "normalize" else parent_directory/extract_path
-#             return input_path
-#         elif approved_input_path.lower() == "n":
-#             while True:
-#                 file_path = input("Enter the input file path: ")
-#                 file_path = parent_directory/file_path
-#                 if os.path.isdir(file_path):
-#                     approve_path = input(f"Use {file_path} as the input path? (y/n): ")
-#                     if approve_path.lower() == "y":
-#                         break
-#                 else:
-#                     print("The provided path does not exist or is not a directory. Please try again.")
-#             return file_path
-#         else:
-#             print("Invalid input. Please enter 'y' or 'n'.")
+# We may not need this function, we are passing paths directly, but saving for later 
+def get_input_file_path(path_input_type, input_path=""):
+    """Get user input for file path."""
+    normalize_path = "data/raw"
+    extract_path = "data/processed"
+    if input_path != "":
+        return input_path
+    parent_directory = Path.cwd().parents[1]
+    while True:
+        if path_input_type == "normalize":
+            approved_input_path = input(f"Use default normalize path {normalize_path}? (y/n): ")
+        elif path_input_type == "extract":
+            approved_input_path = input(f"Use default extract path {extract_path}? (y/n): ")
+        else:
+            print("No valid path input type provided.")
+            return
+        if approved_input_path.lower() == "y":
+            input_path = parent_directory/normalize_path if path_input_type == "normalize" else parent_directory/extract_path
+            return input_path
+        elif approved_input_path.lower() == "n":
+            while True:
+                file_path = input("Enter the input file path: ")
+                file_path = parent_directory/file_path
+                if os.path.isdir(file_path):
+                    approve_path = input(f"Use {file_path} as the input path? (y/n): ")
+                    if approve_path.lower() == "y":
+                        break
+                else:
+                    print("The provided path does not exist or is not a directory. Please try again.")
+            return file_path
+        else:
+            print("Invalid input. Please enter 'y' or 'n'.")
 
 if __name__ == "__main__":
     main()

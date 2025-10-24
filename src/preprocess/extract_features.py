@@ -75,10 +75,12 @@ def extract_features(input_dir: str, output_dir: str, config: Dict[str, Any]
         for file in tqdm(os.listdir(genre_input_path),
                          desc=f"Processing {genre}"):
             input_filepath = os.path.join(genre_input_path, file)
+            # print("file:", file, "input_filepath:", input_filepath)
 
             try:
                 # Extract and save features
                 features = extract_features_from_file(input_filepath, config)
+                print(features)
 
                 output_filepath = os.path.join(genre_output_path,
                                                file.replace(".wav", ".npz"))
