@@ -42,7 +42,7 @@ def return_genre_lst():
 
 def return_wave_statistics():
     """
-    Input: Unaldertered wave file from raw dataset
+    Input: Original wave files from raw dataset
     Output: Wave statistics returned.
     """
 
