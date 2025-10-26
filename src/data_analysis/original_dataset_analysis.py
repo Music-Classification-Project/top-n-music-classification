@@ -1,10 +1,13 @@
 import os, os.path
 
 """
-Analysis of raw download.
+Analysis of raw GTZAN datset.
+Extracts data from PATH ../../data/raw/Data/genres_original/
 """
 
 # RAW file path
+# TODO: Extracted path to txt file / config file?
+
 RAW_GENRE_PATH = '../../data/raw/Data/genres_original/'
 expected_genres = ['blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'reggae', 'pop', 'rock']
 
@@ -45,8 +48,6 @@ def gtzan_raw_analysis():
     [print(f'{genre} {len(os.listdir(RAW_GENRE_PATH + genre))}') for genre in genres_downloaded]
     if genres_downloaded.sort() == expected_genres.sort():
         print("\nDataset uploaded as expected!")
-
-
 
 if __name__ == "__main__":
     gtzan_raw_analysis()
