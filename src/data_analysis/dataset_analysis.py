@@ -1,6 +1,5 @@
 import os, os.path
 from scipy.io import wavfile
-
 import numpy as np
 
 """
@@ -12,10 +11,11 @@ Extracts data from PATH ../../data/raw/Data/genres_original/
 # TODO: Extracted path to txt file / config file?
 
 RAW_GENRE_PATH = '../../data/raw/Data/genres_original/'
+NORMALIZED_GENRE_PATH = '../../data/processed/Data/genres_original/'
 expected_genres = ['blues', 'classical', 'country', 'disco', 'hiphop', 'jazz', 'metal', 'reggae', 'pop', 'rock']
 
 
-def genre_count():
+def genre_count(path: str) -> tuple:
     """
     Input: PATH ../data/raw/Data/genres_original
     Output: Total file count & genre count returned.
@@ -28,7 +28,7 @@ def genre_count():
     return (files, dirs)
 
 
-def return_genre_lst():
+def return_genre_lst(path: str) -> list:
     """
     Input: PATH ../data/raw/Data/genres_original
     Output: List of genre uploaded names.
@@ -40,7 +40,7 @@ def return_genre_lst():
 
     return genres_downloaded
 
-def return_wave_statistics():
+def return_wave_statistics(path: str) -> dict:
     """
     Input: Original wave files from raw dataset
     Output: Wave statistics returned.
@@ -49,7 +49,7 @@ def return_wave_statistics():
     wav_stats = []
     wav_stats, samplerates, durations, mean_amplitudes = [], [], [], []
 
-    for root, dirnames, filenames in os.walk(RAW_GENRE_PATH):
+    for root, dirnames, filenames in os.walk(path):
         for filename in filenames:
             try:
                 samplerate, data = wavfile.read(root+ "/" + filename)
@@ -78,23 +78,26 @@ def return_wave_statistics():
             'min_amplitude': int(np.min(mean_amplitudes)),
             'max_amplitude': int(np.max(mean_amplitudes)),
             'min_samplerate': int(np.min(samplerates)),
-            'max_samplerate': int(np.max(samplerates)),}
+            'max_samplerate': int(np.max(samplerates)),
+            'sd_samplerates': int(np.std(samplerates)),
+            'sd_durations': int(np.std(durations)),
+            'sd_amplitudes': int(np.std(mean_amplitudes)),}
 
 
-def gtzan_raw_analysis():
-    print("GTZAN Raw Analysis\n")
+def gtzan_analysis(path: str):
 
-    files, dirs = genre_count()
+    files, dirs = genre_count(path)
     print('Total Files in GTZAN Dataset: ', files)
     print('Total Genres: ', dirs, '\n')
 
-    genres_downloaded = return_genre_lst()
-    [print(f'{genre} {len(os.listdir(RAW_GENRE_PATH + genre))}') for genre in genres_downloaded]
+    genres_downloaded = return_genre_lst(path)
+    [print(f'{genre} {len(os.listdir(path + genre))}') for genre in genres_downloaded]
     if genres_downloaded.sort() == expected_genres.sort():
         print("\nDataset genres match expected.\n")
 
-    stats = return_wave_statistics()
+    stats = return_wave_statistics(path)
     [print(f'{stat}: {stats[stat]}') for stat in stats]
 
 if __name__ == "__main__":
-    gtzan_raw_analysis()
+    gtzan_analysis(RAW_GENRE_PATH)
+    gtzan_analysis(NORMALIZED_GENRE_PATH)
