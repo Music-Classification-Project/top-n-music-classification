@@ -45,7 +45,7 @@ def build_baseline_cnn_model(input_shape=(128, 130, 1), num_classes=10,
     # sharp vertical line which might be a drum hit, or a horizontal texture
     # which might be a sustained vocal as it scans the entire input image.
     model.add(Conv2D(32, (3, 3), activation='relu', padding='same',
-                     input_shape=input_shape, kernel_regularizer=regularizers.l2(0.01)))
+                     input_shape=input_shape, kernel_regularizer=regularizers.l2(0.005)))
     model.add(BatchNormalization())  # Utility layer that standardizes outputs
     model.add(MaxPooling2D(pool_size=(2, 2)))  # Down-sampling layer
 
@@ -57,10 +57,10 @@ def build_baseline_cnn_model(input_shape=(128, 130, 1), num_classes=10,
 
     # Create layer 3: This layer's filters combine the features of the second
     # layer to find even more complex patterns, such as a melodic pattern
-    model.add(Conv2D(128, (3, 3), activation='relu', padding='same', kernel_regularizer=regularizers.l2(0.01)))
+    model.add(Conv2D(128, (3, 3), activation='relu', padding='same', kernel_regularizer=regularizers.l2(0.05)))
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.5))  # Regularization technique to prevent overfitting
+    model.add(Dropout(0.4))  # Regularization technique to prevent overfitting
 
     # --- DECISION LAYERS ---
     # After layer 3, the model has extracted a bunch of high-level features
