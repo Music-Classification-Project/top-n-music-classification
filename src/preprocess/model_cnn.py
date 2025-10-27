@@ -79,7 +79,7 @@ def build_baseline_cnn_model(input_shape=(128, 130, 1), num_classes=10,
 
     # ---- OUTPUT LAYER ----
     # Dense layer of one neuron for each genre
-    model.add(Dense(num_classes, activation='softmax'))
+    model.add(Dense(num_classes, activation='softmax') )
 
     # ---- COMPILE ----
     # Configures CNN for the training process
