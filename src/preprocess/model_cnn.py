@@ -74,8 +74,8 @@ def build_baseline_cnn_model(input_shape=(128, 130, 1), num_classes=10,
 
     # Dense layer that takes all the high-level features and learns how to
     # combine them to make a final decision.
-    model.add(Dense(128, activation='relu', kernel_regularizer=regularizers.l2(0.001)))
-    model.add(Dropout(0.4))  # Prevent overfitting
+    model.add(Dense(64, activation='relu', kernel_regularizer=regularizers.l2(0.001)))
+    model.add(Dropout(0.3))  # Prevent overfitting
 
     # ---- OUTPUT LAYER ----
     # Dense layer of one neuron for each genre
