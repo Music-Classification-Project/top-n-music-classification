@@ -2,14 +2,12 @@ import numpy as np
 import json
 import os
 from model_cnn import build_baseline_cnn_model
-from keras.utils import to_categorical
+from keras.utils import to_categorical, Sequence
 from sklearn.model_selection import train_test_split
-from keras.callbacks import EarlyStopping, TensorBoard
+from keras.callbacks import EarlyStopping, TensorBoard, ModelCheckpoint, ReduceLROnPlateau
 
 
-BASE_PATH = os.path.abspath('../../data/features/Data')
-print('XXXXXXXXXXXXXXXXXXXXX')
-print(os.getcwd())
+BASE_PATH = os.path.abspath('./data/features/Data')
 
 #Genres aren't part of .npz files, so I used metadata.json to build a dictionary to map filename to genre
 #Load metadata
@@ -28,7 +26,8 @@ label_map = {genre: i for i, genre in enumerate(genres)}
 file_paths = []
 labels = []
 for filename, genre in filename_to_genre.items():
-    full_path = os.path.join(BASE_PATH,'*',filename)
+    filename = filename.replace('.wav','.npz')
+    full_path = os.path.join(BASE_PATH, genre, filename)
     if os.path.exists(full_path):
         file_paths.append(full_path)
         labels.append(label_map[genre])
@@ -36,7 +35,7 @@ for filename, genre in filename_to_genre.items():
         print(f'Missing file: {full_path}')
 
 
-class DataGenerator:
+class DataGenerator(Sequence):
     """Generates batches of training data, so all files don't have to be loaded into RAM at once"""
     def __init__(self, file_paths, labels, batch_size, num_classes, shuffle=True):
         self.file_paths = file_paths
@@ -50,22 +49,23 @@ class DataGenerator:
         #Number of batches per epoch
         return int(np.ceil(len(self.file_paths) / self.batch_size))
     
-    def __iter__(self):
-        while True:
-            if self.shuffle:
-                np.random.shuffle(self.indices)
-            for i in range(0, len(self.file_paths), self.batch_size):
-                batch_indices = self.indices[i:i+self.batch_size]
-                x_batch = []
-                y_batch = []
-                for j in batch_indices:
-                    data = np.load(self.file_paths[j])
-                    x_batch.append(data['mel_spec'])
-                    y_batch.append(self.labels[j])
-                x_batch = np.array(x_batch)
-                y_batch = to_categorical(y_batch, num_classes=self.num_classes)
+    def __getitem__(self, index):
+        start_index = index * self.batch_size
+        end_index = (index+1) * self.batch_size
+        batch_indices = self.indices[start_index:end_index]
+        x_batch = []
+        y_batch = []
+        for j in batch_indices:
+            data = np.load(self.file_paths[j])
+            x_batch.append(data['mel_spec'])
+            y_batch.append(self.labels[j])
+        x_batch = np.array(x_batch)
+        y_batch = to_categorical(y_batch, num_classes=self.num_classes)
+        return x_batch, y_batch
 
-                yield x_batch, y_batch
+    def on_epoch_end(self):
+        if self.shuffle:
+            np.random.shuffle(self.indices)
 
 
 #Split data into training and testing sets
@@ -77,22 +77,50 @@ train_gen = DataGenerator(train_paths, train_labels, batch_size=batch_size, num_
 test_gen = DataGenerator(test_paths, test_labels, batch_size=batch_size, num_classes=len(label_map), shuffle=False)
 
 #Build model
-model = build_baseline_cnn_model()
+model = build_baseline_cnn_model(input_shape=(128, 431, 1), num_classes=len(label_map))
+
 
 #Callbacks
-callbacks = [
-    EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True),
-    TensorBoard(log_dir='logs', histogram_freq=1)
-]
+#Saves the best model based on validation loss
+checkpoint = ModelCheckpoint(
+    filepath='best_model.keras',
+    monitor='val_loss',
+    verbose=1,
+    save_best_only=True,
+    mode='min'
+)
+
+#Stops training if validation loss doesn't improve for a number of epochs
+early_stopping = EarlyStopping(
+    monitor='val_loss',
+    patience=7, #wait 7 epochs for improvement
+    restore_best_weights=True,
+    verbose=1
+)
+
+#Reduce learning rate when validation loss plateaus
+reduce_lr = ReduceLROnPlateau(
+    monitor='val_loss',
+    factor=0.5, # reduce learning rate by half
+    patience=3, #wait 3 epochs before reducing
+    min_lr=1e-6,
+    verbose=1
+)
+
+tensorboard = TensorBoard(
+    log_dir='logs',
+    histogram_freq=1
+)
+
+callbacks = [checkpoint, early_stopping, reduce_lr, tensorboard]
 
 #Train model
 model.fit(
     train_gen,
     validation_data=test_gen,
     epochs=30,
-    steps_per_epoch=len(train_paths)//batch_size,
-    validation_steps=len(test_paths)//batch_size
+    callbacks=callbacks
 )
 
 #Save model
-model.save('music_genre_classifier.keras')
+model.save('final_model.keras')
