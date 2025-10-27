@@ -45,22 +45,22 @@ def build_baseline_cnn_model(input_shape=(128, 130, 1), num_classes=10,
     # sharp vertical line which might be a drum hit, or a horizontal texture
     # which might be a sustained vocal as it scans the entire input image.
     model.add(Conv2D(32, (3, 3), activation='relu', padding='same',
-                     input_shape=input_shape, kernel_regularizer=regularizers.l2(0.001)))
+                     input_shape=input_shape, kernel_regularizer=regularizers.l2(0.01)))
     model.add(BatchNormalization())  # Utility layer that standardizes outputs
     model.add(MaxPooling2D(pool_size=(2, 2)))  # Down-sampling layer
 
     # Create layer 2: These 64 filters combine the features of the first layer
     # to find more complex patterns such as a series of drum hits.
-    model.add(Conv2D(64, (3, 3), activation='relu', padding='same', kernel_regularizer=regularizers.l2(0.001)))
+    model.add(Conv2D(64, (3, 3), activation='relu', padding='same', kernel_regularizer=regularizers.l2(0.01)))
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     # Create layer 3: This layer's filters combine the features of the second
     # layer to find even more complex patterns, such as a melodic pattern
-    model.add(Conv2D(128, (3, 3), activation='relu', padding='same', kernel_regularizer=regularizers.l2(0.001)))
+    model.add(Conv2D(128, (3, 3), activation='relu', padding='same', kernel_regularizer=regularizers.l2(0.01)))
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.3))  # Regularization technique to prevent overfitting
+    model.add(Dropout(0.5))  # Regularization technique to prevent overfitting
 
     # --- DECISION LAYERS ---
     # After layer 3, the model has extracted a bunch of high-level features
@@ -74,7 +74,7 @@ def build_baseline_cnn_model(input_shape=(128, 130, 1), num_classes=10,
 
     # Dense layer that takes all the high-level features and learns how to
     # combine them to make a final decision.
-    model.add(Dense(64, activation='relu', kernel_regularizer=regularizers.l2(0.001)))
+    model.add(Dense(64, activation='relu', kernel_regularizer=regularizers.l2(0.01)))
     model.add(Dropout(0.4))  # Prevent overfitting
 
     # ---- OUTPUT LAYER ----
