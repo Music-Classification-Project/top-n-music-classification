@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from keras.callbacks import EarlyStopping, TensorBoard, ModelCheckpoint, ReduceLROnPlateau
 
 
-BASE_PATH = os.path.abspath('./data/features/Data')
+BASE_PATH = os.path.abspath('../../data/features/Data')
 
 #Genres aren't part of .npz files, so I used metadata.json to build a dictionary to map filename to genre
 #Load metadata
