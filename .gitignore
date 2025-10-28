@@ -8,3 +8,4 @@ raw/
 data
 __pycache__/
 src/preprocess/__pycache__/
+src/preprocess/logs
