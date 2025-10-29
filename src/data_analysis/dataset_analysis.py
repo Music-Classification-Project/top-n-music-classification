@@ -1,14 +1,17 @@
 import os, os.path
+import wave
 
-from matplotlib.pyplot import title
 from scipy.io import wavfile
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
+import random
 
 """ 
 Dataset Analysis - May be used for raw and normalized datasets. 
 Requires data set path.
 Example path: raw_genre_path = '../../data/raw/Data/genres_original/'
+Input: Path and Processed State [Normalized, Processed, Raw]
 """
 
 EXPECTED_GENRES = ["blues", "classical", "country", "disco", "hiphop", "jazz", "metal", "pop", "reggae", "rock"]
@@ -23,7 +26,7 @@ def genre_count(path: str) -> tuple:
     for root, dirnames, filenames in os.walk(path):
         dirs += len(dirnames)
         files += len(filenames)
-    return (files, dirs)
+    return files, dirs
 
 
 def return_genre_lst(path: str) -> list:
@@ -38,7 +41,7 @@ def return_genre_lst(path: str) -> list:
 
     return genres_downloaded
 
-def return_wave_statistics(path: str) -> dict:
+def return_wave_statistics(path: str, processed_state: str) -> dict:
     """
     Input: dataset PATH
     Output: Wave statistics returned.
@@ -71,19 +74,19 @@ def return_wave_statistics(path: str) -> dict:
     plt.plot(durations)
     plt.title('Durations')
     plt.ylabel('Duration (s)')
-    plt.savefig("output/durations.png")
+    plt.savefig(f'output/{processed_state}/{processed_state}_durations.png')
     plt.close()
 
     plt.plot(samplerates)
     plt.title('Sample Rates')
     plt.ylabel('Sample Rate (Hz)')
-    plt.savefig("output/samplerates.png", )
+    plt.savefig(f'output/{processed_state}/{processed_state}_samplerates.png')
     plt.close()
 
     plt.plot(mean_amplitudes)
     plt.title('Mean Amplitudes')
     plt.ylabel('Amplitude (dB)')
-    plt.savefig("output/amplitudes.png")
+    plt.savefig(f'output/{processed_state}/{processed_state}_amplitudes.png')
     plt.close()
 
     return {'mean_duration': int(np.mean(durations)),
@@ -99,11 +102,28 @@ def return_wave_statistics(path: str) -> dict:
             'sd_durations': int(np.std(durations)),
             'sd_amplitudes': int(np.std(mean_amplitudes)),}
 
-def gtzan_analysis(path: str):
+def random_wav_plot(path: str, processed_state: str):
+    """ Plots random wav file in path"""
+    random_genre = random.choice(os.listdir(path))
+    random_wav = random.choice(os.listdir(f'{path}/{random_genre}'))
+    random_pth = f'{path}/{random_genre}/{random_wav}'
+    spec = wave.open(random_pth, "r")
+    signal = spec.readframes(-1)
+    signal = np.frombuffer(signal, dtype=np.int16)
+
+
+
+    plt.figure(1)
+    plt.title(f'Signal Wave From Random Wave File : {random_wav}')
+    plt.plot(signal)
+    plt.savefig(f'output/{processed_state}/{random_wav}.png')
+    plt.close()
+
+
+def gtzan_analysis(path: str, processed_state: str):
 
     files, dirs = genre_count(path)
-    file_name  = input("What would you like to name your output?\n")
-    with open(f'output/{file_name}.txt', 'a') as f:
+    with open(f'output/{processed_state}/{processed_state}_metrics.txt', 'a') as f:
         print('DATASET PATH: ', path, '\n', file=f, flush=True)
         print('Total Files in GTZAN Dataset: ', files, file=f)
         print('Total Genres: ', dirs, '\n', file=f)
@@ -113,11 +133,18 @@ def gtzan_analysis(path: str):
         if genres_downloaded.sort() == EXPECTED_GENRES.sort():
             print("\nDataset genres match expected.\n",file=f)
 
-        stats = return_wave_statistics(path)
+        stats = return_wave_statistics(path, processed_state)
         [print(f'{stat}: {stats[stat]}', file=f) for stat in stats]
 
+        random_wav_plot(path, processed_state)
+
+
+
 if __name__ == "__main__":
-    raw_genre_path = '../../data/raw/Data/genres_original/'
-    normalized_genre_path = '../../data/processed/Data/genres_original/'
-    gtzan_analysis(raw_genre_path)
-    gtzan_analysis(normalized_genre_path)
+    #raw_genre_path = '../../data/raw/Data/genres_original/'
+    #normalized_genre_path = '../../data/processed/Data/genres_original/'
+    # PATH
+    path = sys.argv[1]
+    # State of processing: normalized / raw
+    processed_state = sys.argv[2]
+    gtzan_analysis(path, processed_state)
