@@ -1,0 +1,18 @@
+DATASET PATH:  ../../data/features/gtzan/ 
+
+Total Files in GTZAN Dataset:  1000
+Total Genres:  10 
+
+pop 100
+metal 100
+disco 100
+blues 100
+reggae 100
+classical 100
+rock 100
+hiphop 100
+country 100
+jazz 99
+
+Dataset genres match expected.
+

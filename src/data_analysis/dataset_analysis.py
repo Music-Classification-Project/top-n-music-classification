@@ -1,6 +1,8 @@
 import os, os.path
 import wave
 
+import librosa
+import librosa.display
 from scipy.io import wavfile
 import numpy as np
 import matplotlib.pyplot as plt
@@ -125,24 +127,49 @@ def random_wav_plot(path: str, processed_state: str):
     plt.savefig(f'output/{processed_state}/{random_wav[:-4]}.png')
     plt.close()
 
+    y, sr = librosa.load(random_pth)
+    librosa.display.waveshow(y, sr=sr)
+
+def random_feature_plot(path:str):
+    random_genre = random.choice(os.listdir(path))
+    random_npz = random.choice(os.listdir(f'{path}/{random_genre}'))
+    random_pth = f'{path}/{random_genre}/{random_npz}'
+    loaded_file = np.load(random_pth)
+    print(loaded_file)
+
+    plt.figure(figsize=(10, 5))
+    librosa.display.specshow(loaded_file['mfcc'], x_axis='time', cmap='viridis', hop_length=512)
+    plt.colorbar(format='%+2.0f dB')
+    plt.title(f'MFCC for {random_npz}')
+    plt.xlabel('Time (s)')
+    plt.ylabel('MFCC Coefficients')
+    plt.savefig(f'output/{processed_state}/{random_npz[:-4]}.png')
 
 def gtzan_analysis(path: str, processed_state: str):
-
     files, dirs = genre_count(path)
-    with open(f'output/{processed_state}/{processed_state}_metrics.txt', 'a') as f:
+    with open(f'output/{processed_state}/{processed_state}_metrics.txt', 'w+') as f:
         print('DATASET PATH: ', path, '\n', file=f, flush=True)
         print('Total Files in GTZAN Dataset: ', files, file=f)
         print('Total Genres: ', dirs, '\n', file=f)
 
         genres_downloaded = return_genre_lst(path)
-        [print(f'{genre} {len(os.listdir(path + genre))}', file=f) for genre in genres_downloaded]
+
+        [print(f'{genre} {len(os.listdir(path + genre))}', file=f) for genre in genres_downloaded if os.path.isdir(path+genre)]
         if genres_downloaded.sort() == EXPECTED_GENRES.sort():
-            print("\nDataset genres match expected.\n",file=f)
+            print("\nDataset genres match expected.\n", file=f)
 
-        stats = return_wave_statistics(path, processed_state)
-        [print(f'{stat}: {stats[stat]}', file=f) for stat in stats]
+        if processed_state in ['processed', 'raw']:
+            stats = return_wave_statistics(path, processed_state)
+            [print(f'{stat}: {stats[stat]}', file=f) for stat in stats]
+            random_wav_plot(path, processed_state)
 
-        random_wav_plot(path, processed_state)
+        elif processed_state == 'features':
+            random_feature_plot(path)
+
+        else:
+            print("Please supply processed, raw, or features as your second argument.")
+
+
 
 
 
@@ -151,6 +178,5 @@ if __name__ == "__main__":
     #normalized_genre_path = '../../data/processed/Data/genres_original/'
     # PATH
     path = sys.argv[1]
-    # State of processing: normalized / raw
     processed_state = sys.argv[2]
     gtzan_analysis(path, processed_state)
