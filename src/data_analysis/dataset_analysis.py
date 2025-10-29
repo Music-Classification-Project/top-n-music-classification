@@ -70,22 +70,24 @@ def return_wave_statistics(path: str, processed_state: str) -> dict:
             except Exception as e:
                 print(f'Error processing {filename}: {e}')
 
-    # TODO: Prevent png overwriting
     plt.plot(durations)
     plt.title('Durations')
     plt.ylabel('Duration (s)')
     plt.savefig(f'output/{processed_state}/{processed_state}_durations.png')
+    plt.autoscale()
     plt.close()
 
     plt.plot(samplerates)
     plt.title('Sample Rates')
     plt.ylabel('Sample Rate (Hz)')
+    plt.autoscale()
     plt.savefig(f'output/{processed_state}/{processed_state}_samplerates.png')
     plt.close()
 
     plt.plot(mean_amplitudes)
     plt.title('Mean Amplitudes')
     plt.ylabel('Amplitude (dB)')
+    plt.autoscale()
     plt.savefig(f'output/{processed_state}/{processed_state}_amplitudes.png')
     plt.close()
 
@@ -111,12 +113,16 @@ def random_wav_plot(path: str, processed_state: str):
     signal = spec.readframes(-1)
     signal = np.frombuffer(signal, dtype=np.int16)
 
+    fs = spec.getframerate()
+
+    time = np.linspace(0, len(signal) / fs, num = len(signal))
 
 
     plt.figure(1)
     plt.title(f'Signal Wave From Random Wave File : {random_wav}')
-    plt.plot(signal)
-    plt.savefig(f'output/{processed_state}/{random_wav}.png')
+    plt.plot(time, signal)
+    plt.autoscale()
+    plt.savefig(f'output/{processed_state}/{random_wav[:-4]}.png')
     plt.close()
 
 
