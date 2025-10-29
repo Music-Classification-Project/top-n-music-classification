@@ -19,7 +19,7 @@ def get_directories_in_folder(function="normalize"):
                 if new_path.is_dir():
                     # print("Descending into Directory:", new_path)
                     recursive_search(new_path)
-                elif new_path.suffix.lower() in {'.wav', '.mp3', '.m4a', 
+                elif new_path.suffix.lower() in {'.wav', '.mp3', '.m4a',
                                                  '.ogg', '.flac', '.aac'}:
                     # print("Found File:", new_path)
                     isfile = True
