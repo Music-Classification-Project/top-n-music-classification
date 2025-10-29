@@ -2,8 +2,8 @@
 Defines the baseline Convolutional Neural Network (CNN) architecture
 for music genre classification using Mel spectrogram inputs.
 
-This module exposes a single function: build_cnn_model(input_shape,
-num_classes) that returns a compiled Keras model ready for training.
+This module exposes a single function: build_baseline_cnn_model() that returns
+a compiled Keras model ready for training.
 """
 
 
