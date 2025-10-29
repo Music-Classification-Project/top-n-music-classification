@@ -4,13 +4,13 @@ import os
 from model_cnn import build_baseline_cnn_model
 from keras.utils import to_categorical, Sequence
 from sklearn.model_selection import train_test_split
-from keras.callbacks import (EarlyStopping, TensorBoard, ModelCheckpoint, 
+from keras.callbacks import (EarlyStopping, TensorBoard, ModelCheckpoint,
                              ReduceLROnPlateau)
 
 
 BASE_PATH = os.path.abspath('./data/features/Data')
 
-# Genres aren't part of .npz files, so I used metadata.json to build a 
+# Genres aren't part of .npz files, so I used metadata.json to build a
 # dictionary to map filename to genre Load metadata
 metadata_path = os.path.join(BASE_PATH, 'metadata.json')
 with open(metadata_path, 'r') as f:
