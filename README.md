@@ -17,7 +17,7 @@
         /output              : Contains the results of data analysis. Contains PNG and TXT files with plots and statistics respectively.
             /raw             : Contains results from raw dataset.
             /normalized      : Contains results from normalized dataset.
-            /processed       : Contains results from processed dataset.
+            /features        : Contains results from features dataset.
         /dataset_analysis.py : Analyzes raw and normalized data.
     
 
