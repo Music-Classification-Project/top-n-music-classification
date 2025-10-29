@@ -11,10 +11,10 @@ from keras.models import Sequential
 from keras.layers import (Conv2D, BatchNormalization, MaxPooling2D, Dropout,
                           Flatten, Dense)
 from keras.optimizers import Adam
+from keras import regularizers
 
-
-def build_baseline_cnn_model(input_shape=(128, 130, 1), num_classes=10,
-                             learning_rate=0.001):
+def build_baseline_cnn_model(learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4,
+                             dropout_1, dropout_2, input_shape=(128, 130, 1), num_classes=10):
     """
     Build and compile a simple baseline CNN for genre classification.
 
@@ -45,22 +45,22 @@ def build_baseline_cnn_model(input_shape=(128, 130, 1), num_classes=10,
     # sharp vertical line which might be a drum hit, or a horizontal texture
     # which might be a sustained vocal as it scans the entire input image.
     model.add(Conv2D(32, (3, 3), activation='relu', padding='same',
-                     input_shape=input_shape))
+                     input_shape=input_shape, kernel_regularizer=regularizers.l2(regularizer_1)))
     model.add(BatchNormalization())  # Utility layer that standardizes outputs
     model.add(MaxPooling2D(pool_size=(2, 2)))  # Down-sampling layer
 
     # Create layer 2: These 64 filters combine the features of the first layer
     # to find more complex patterns such as a series of drum hits.
-    model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
+    model.add(Conv2D(64, (3, 3), activation='relu', padding='same', kernel_regularizer=regularizers.l2(regularizer_2)))
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     # Create layer 3: This layer's filters combine the features of the second
     # layer to find even more complex patterns, such as a melodic pattern
-    model.add(Conv2D(128, (3, 3), activation='relu', padding='same'))
+    model.add(Conv2D(128, (3, 3), activation='relu', padding='same', kernel_regularizer=regularizers.l2(regularizer_3)))
     model.add(BatchNormalization())
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.3))  # Regularization technique to prevent overfitting
+    model.add(Dropout(dropout_1))  # Regularization technique to prevent overfitting
 
     # --- DECISION LAYERS ---
     # After layer 3, the model has extracted a bunch of high-level features
@@ -74,8 +74,8 @@ def build_baseline_cnn_model(input_shape=(128, 130, 1), num_classes=10,
 
     # Dense layer that takes all the high-level features and learns how to
     # combine them to make a final decision.
-    model.add(Dense(256, activation='relu'))
-    model.add(Dropout(0.4))  # Prevent overfitting
+    model.add(Dense(64, activation='relu', kernel_regularizer=regularizers.l2(regularizer_4)))
+    model.add(Dropout(dropout_2))  # Prevent overfitting
 
     # ---- OUTPUT LAYER ----
     # Dense layer of one neuron for each genre
