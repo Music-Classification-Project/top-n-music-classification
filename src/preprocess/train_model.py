@@ -147,14 +147,13 @@ def train_model_wrapper(learning_rate=0.00005, regularizer_1=0.001, regularizer_
     fieldnames = ["index", "learning_rate", "regularizers", "dropouts", "val_loss", "val_accuracy"]
     print(results)
 
-    with open('test_results.csv', 'a', newline='') as file:
+    with open('iterate_for_best_model.csv', 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         if file.tell() == 0:
             writer.writeheader()
         writer.writerow(results) 
 
-    #make new directory and enter into it
-    # create a unique run directory and switch into it
+    
     os.chdir("final_models")
     model.save(f'final_model_{i}.keras')
     os.chdir("../")
@@ -164,7 +163,7 @@ if __name__ == "__main__":
     # learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2 = get_variables()
     # train_model_wrapper(learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2)
 
-    for i in range(3):
+    for i in range(10):
         learning_rate = 0.00005
         regularizer_1 = 0.0001
         regularizer_2 = 0.0001
@@ -173,35 +172,3 @@ if __name__ == "__main__":
         dropout_1 = 0.3
         dropout_2 = 0.4
         train_model_wrapper(learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2, i)
-
-
-
-    # def reset_dropouts(): 
-    #     learning_rate = 0.00005
-    #     regularizer_1 = 0.0001
-    #     regularizer_2 = 0.0001
-    #     regularizer_3 = 0.0001
-    #     regularizer_4 = 0.0001
-    #     dropout_1 = 0.3
-    #     dropout_2 = 0.4
-    #     return learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2
-
-     
-    # learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2 = reset_dropouts() 
-    # dropouts = [(0.3, 0.3), (0.4, 0.4), (0.5, 0.5), (0.3, 0.4), (0.4, 0.5), (0.3, 0.5), (0.35, 0.45)]
-    # for dropout_1, dropout_2 in dropouts:
-    #    train_model_wrapper(learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2)
-
-    # learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2 = reset_dropouts() 
-    # learning_rates =  [0.00005, 0.00001, 0.0001, 0.0005, 0.001]
-    # for learning_rate in learning_rates:
-    #    train_model_wrapper(learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2)
-
-    # learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2 = reset_dropouts() 
-    # regularizers = [(0.001, 0.001, 0.001, 0.001), (0.01, 0.01, 0.01, 0.01), (0.0001, 0.0001, 0.0001, 0.0001), (0.01, 0.005, 0.001, 0.001)]
-    # for regularizer_1, regularizer_2, regularizer_3, regularizer_4 in regularizers:
-    #     train_model_wrapper(learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2)
-
-    # learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2 = reset_dropouts()
-    # train_model_wrapper(learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2)
-
