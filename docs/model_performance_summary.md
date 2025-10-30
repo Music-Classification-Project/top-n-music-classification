@@ -1,6 +1,6 @@
 # Model Performance Summary (Week 2)
 
-- Model evaluated: `src/preprocess/final_model_4.keras`
+- Models evaluated: `../src/preprocess/best_model.keras`, `../src/preprocess/final_model_1.keras`, and `../src/preprocess/final_model_4.keras`
 - Note: Saved checkpoints are 6‑class models. Evaluation is on these 6 genres: `blues`, `classical`, `country`, `disco`, `hiphop`, `jazz`.
 - Split: 80/20 stratified (random_state=27), matching the training validation split.
 - Features: Mel spectrograms shaped `(128, 431, 1)`.
@@ -20,16 +20,16 @@ Per‑class accuracy (row‑normalized confusion matrix diagonal):
 - hiphop: ~0.90
 - jazz: ~0.00
 
- Key insight: Jazz samples are most often misclassified (frequently as Country). For Jazz, the model got 0 out of 20 songs correct. Classical, Country, and Hiphop show strong recall.
+ Key insight: Jazz samples are most often misclassified (frequently as Country). For Jazz, the model correctly identified 0 out of 20 songs correct. Classical, Country, and Hiphop show strong recall.
 
 ## Visuals
-- `confusion_matrix.png` (counts)
-- `confusion_matrix_norm.png` (row‑normalized)
+- `confusion_matrix.png` (counts) row count: 20
+- `confusion_matrix_norm.png` (row‑normalized) row count: 1
 - `per_class_accuracy.png` (bar chart)
 
 ## Which Model Performs Best?
 
-Based on validation metrics and our evaluation workflow, `final_model_4.keras` performs best overall. You can test other models by chaning MODEL_PATH in cell 2.
+Based on validation metrics and our evaluation workflow, `final_model_4.keras` performs best overall. You can test other models by changing MODEL_PATH in cell 2.
 
 ## How to Run the Evaluation Notebook
 
