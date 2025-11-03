@@ -1,6 +1,8 @@
 from typing import Union, IO, List, TypedDict
+from pathlib import Path
 
 
+# Work in progess 
 class SongRecommendation(TypedDict):
     """
     A dictionary representing a single song recommendation.
@@ -26,19 +28,47 @@ class ModelLoadError(Exception):
     """Raised when the model fails to load properly."""
     pass
 
-
+# Work in progess (only use Dummy class for now - not functional)
 class MusicModelService:
-    def __init__(self, model_path: str):
-        """Loads the trained model.
+    # string path or pathlib.Path object
+    def __init__(self, model_path: Union[str, Path]) -> None:
+        """Loads the trained model and initializes service metadata.
 
         Args:
-            model_path (str): Path to the model file to load.
+            model_path (Union[str, Path]): Path to the model file or directory.
 
         Raises:
             FileNotFoundError: If the model_path does not exist.
             ModelLoadError: If the model fails to load properly.
+            TypeError: If model_path is not a str or Path.
         """
-        pass
+        if not isinstance(model_path, (str, Path)):
+            raise TypeError("model_path must be a str or pathlib.Path")
+
+        path = Path(model_path)
+        if not path.exists():
+            raise FileNotFoundError(str(path))
+
+        try:
+            self.model = self._load_model(path)
+        except Exception as e:
+            raise ModelLoadError(f"Failed to load model at {path}") from e
+
+        # Basic service metadata; adjust as the real model is integrated
+        self.model_path: Path = path
+        self.loaded: bool = True
+        self.version: str = "unknown"
+        self.labels: List[str] = []
+        self.sample_rate: int = 22050
+        self.max_top_k: int = 10
+
+    def _load_model(self, path: Path):
+        """Internal helper to load the underlying model object.
+
+        Replace this stub with the concrete framework loader (e.g., TensorFlow/PyTorch).
+        """
+        # TODO: Implement framework-specific loading
+        return object()
 
     def predict_genres(
         self, audio_data: Union[str, IO[bytes]], top_k: int = 5
@@ -60,6 +90,7 @@ class MusicModelService:
             AudioProcessingError: If the audio file is corrupt or in an
                                   unsupported format.
         """
+        
         pass
 
     def get_recommendations(
@@ -91,6 +122,41 @@ class DummyMusicModelService:
         """Simulates loading a trained model from disk."""
         self.model_path = model_path
         self.loaded = True
+        # Provide sensible defaults for frontend metadata (aligned to src/preprocess)
+        self.model_name = "dummy-music-model"
+        self.version = "dummy-1.0"
+        self.dummy_mode = True
+
+        # Labels/classes (order matters in real models)
+        self.labels: List[str] = [
+            "rock",
+            "pop",
+            "jazz",
+            "classical",
+            "hiphop",
+            "country",
+            "electronic",
+            "blues",
+            "reggae",
+            "metal",
+        ]
+        self.class_count = len(self.labels)
+
+        # Audio and feature config matched to extract_features.py and normalize_data.py
+        self.sample_rate = 22050  # Hz
+        self.input_duration_sec = 10  # seconds (see normalize_data.DURATION)
+        self.channels = 1  # librosa.load(..., mono=True)
+
+        # Feature settings (see extract_features.py CONFIG defaults)
+        self.feature_types = ["mel_spec", "mfcc"]
+        self.n_mels = 128
+        self.n_mfcc = 13
+        self.n_fft = 2048
+        self.hop_length = 512
+
+        # IO constraints and formats
+        self.max_top_k = 10
+        self.max_file_mb = 32
 
     def predict_genres(
         self, audio_data: Union[str, IO[bytes]], top_k: int = 5
@@ -147,7 +213,7 @@ if __name__ == "__main__":
         print("The model has loaded successfully\n\n")
 
     print("Results for predict_genres():\n")
-    print(mockModel.get_recommendations("path/to/imaginary/audio/file", 3))
+    print(mockModel.predict_genres("path/to/imaginary/audio/file", 3))
     print("\n\n")
 
     print("Results for get_recommendations():\n")
