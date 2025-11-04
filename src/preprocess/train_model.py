@@ -5,7 +5,8 @@ import csv
 from model_cnn import build_baseline_cnn_model
 from keras.utils import to_categorical, Sequence
 from sklearn.model_selection import train_test_split
-from keras.callbacks import EarlyStopping, TensorBoard, ModelCheckpoint, ReduceLROnPlateau
+from keras.callbacks import (EarlyStopping, TensorBoard, ModelCheckpoint,
+                             ReduceLROnPlateau)
 
 def get_variables():
     learning_rate = float(input("Input learning rate: (default: 0.00005): " ))
