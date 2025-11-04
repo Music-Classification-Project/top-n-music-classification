@@ -28,7 +28,7 @@ def train_model_wrapper(learning_rate=0.00005, regularizer_1=0.001,
                         dropout_2=0.4, i=1):
     """Handles one full training session"""
 
-    BASE_PATH = os.path.abspath('../../data/features/Data')
+    BASE_PATH = './data/features/gtzan'
 
     # NOTE: Genres aren't part of .npz files, so I used metadata.json to build
     # a dictionary to map filename to genre
@@ -182,7 +182,7 @@ def train_model_wrapper(learning_rate=0.00005, regularizer_1=0.001,
 
 
 if __name__ == "__main__":
-    for i in range(10):
+    for i in range(1):
         learning_rate = 0.00005
         regularizer_1 = 0.0001
         regularizer_2 = 0.0001
