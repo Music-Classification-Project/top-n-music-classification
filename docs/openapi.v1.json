@@ -1,0 +1,294 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Music Model API",
+    "version": "v1",
+    "description": "Endpoints for genre prediction and recommendations."
+  },
+  "paths": {
+    "/v1/status": {
+      "get": {
+        "summary": "Status/metadata",
+        "responses": {
+          "200": {
+            "description": "Service status",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HealthResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/v1/genres": {
+      "get": {
+        "summary": "Get genres and model version",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/GenreInfoResponse" } }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/v1/genres/music": {
+      "get": {
+        "summary": "Demo predictions when USE_DUMMY_SERVICE=true; usage otherwise",
+        "parameters": [
+          {
+            "name": "top_k",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 1 },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    { "$ref": "#/components/schemas/PredictionsResponse" },
+                    { "$ref": "#/components/schemas/UsageResponse" }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Predict top genres for an audio file",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string", "format": "binary" },
+                  "top_k": { "type": "integer", "minimum": 1 }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/PredictionsResponse" } }
+            }
+          },
+          "400": { "description": "Bad request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "413": { "description": "Payload too large", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "405": { "description": "Method not allowed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "500": { "description": "Server error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/v1/genres/recommendations": {
+      "get": {
+        "summary": "Demo recommendations when USE_DUMMY_SERVICE=true; usage otherwise",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "minimum": 1 },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    { "$ref": "#/components/schemas/RecommendationsResponse" },
+                    { "$ref": "#/components/schemas/UsageResponse" }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Get song recommendations for an audio file",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string", "format": "binary" },
+                  "limit": { "type": "integer", "minimum": 1 }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/RecommendationsResponse" } }
+            }
+          },
+          "400": { "description": "Bad request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "413": { "description": "Payload too large", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "405": { "description": "Method not allowed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "500": { "description": "Server error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/docs": {
+      "get": { "summary": "Swagger UI", "responses": { "200": { "description": "HTML" } } }
+    }
+  },
+  "x-service-meta": {
+    "loaded": false,
+    "genres": [],
+    "version": "unknown",
+    "model_name": null,
+    "dummy_mode": false,
+    "class_count": null,
+    "sample_rate": 22050,
+    "input_duration_sec": 10,
+    "channels": 1,
+    "feature_types": ["mel_spec", "mfcc"],
+    "n_mels": 128,
+    "n_mfcc": 13,
+    "n_fft": 2048,
+    "hop_length": 512,
+    "max_file_mb": 32,
+    "max_top_k": 10
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "message": { "type": "string" },
+          "allowed": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["error"]
+      },
+      "Prediction": {
+        "type": "object",
+        "properties": {
+          "genre": { "type": "string" },
+          "confidence": { "type": "number" }
+        },
+        "required": ["genre", "confidence"]
+      },
+      "PredictionsResponse": {
+        "type": "object",
+        "properties": {
+          "predictions": { "type": "array", "items": { "$ref": "#/components/schemas/Prediction" } },
+          "top_k": { "type": "integer" },
+          "demo": { "type": "boolean" }
+        },
+        "required": ["predictions", "top_k"]
+      },
+      "RecommendationItem": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "artist": { "type": "string" },
+          "genre": { "type": "string" },
+          "similarity_score": { "type": "number" }
+        },
+        "required": ["title", "artist", "genre", "similarity_score"]
+      },
+      "RecommendationsResponse": {
+        "type": "object",
+        "properties": {
+          "recommendations": { "type": "array", "items": { "$ref": "#/components/schemas/RecommendationItem" } },
+          "limit": { "type": "integer" },
+          "demo": { "type": "boolean" }
+        },
+        "required": ["recommendations", "limit"]
+      },
+      "GenreInfoResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "genres": { "type": "array", "items": { "type": "string" } },
+              "model_version": { "type": "string" }
+            },
+            "required": ["genres", "model_version"]
+          }
+        },
+        "required": ["data"]
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string" },
+          "loaded": { "type": "boolean" },
+          "version": { "type": "string" },
+          "genres": { "type": "array", "items": { "type": "string" } },
+          "model_name": { "type": "string" },
+          "dummy_mode": { "type": "boolean" },
+          "class_count": { "type": "integer" },
+          "sample_rate": { "type": "integer" },
+          "input_duration_sec": { "type": "integer" },
+          "channels": { "type": "integer" },
+          "feature_types": { "type": "array", "items": { "type": "string" } },
+          "n_mels": { "type": "integer" },
+          "n_mfcc": { "type": "integer" },
+          "n_fft": { "type": "integer" },
+          "hop_length": { "type": "integer" },
+          "max_file_mb": { "type": "integer" },
+          "max_top_k": { "type": "integer" }
+        },
+        "required": ["status", "loaded", "version", "genres"]
+      },
+      "UsageResponse": {
+        "type": "object",
+        "properties": {
+          "usage": { "type": "string" },
+          "fields": { "type": "object" },
+          "example_curl": { "type": "string" }
+        },
+        "required": ["usage"]
+      }
+    }
+  }
+}

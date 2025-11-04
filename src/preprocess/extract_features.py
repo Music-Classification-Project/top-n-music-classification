@@ -129,6 +129,6 @@ if __name__ == "__main__":
         "use_chroma": False
     }
 
-    input_dir = "../../data/processed/gtzan"
-    output_dir = "../../data/features/gtzan"
+    input_dir = "./data/processed/gtzan"
+    output_dir = "./data/features/gtzan"
     extract_features(input_dir, output_dir, CONFIG)
