@@ -10,6 +10,7 @@ from keras.callbacks import (EarlyStopping, TensorBoard, ModelCheckpoint,
 
 
 def get_variables():
+    """Gets hyperparameters from user input"""
     learning_rate = float(input("Input learning rate: (default: 0.00005): "))
     regularizer_1 = float(input("Input regularizer 1: (default: 0.001): "))
     regularizer_2 = float(input("Input regularizer 2: (default: 0.001): "))
@@ -25,6 +26,8 @@ def train_model_wrapper(learning_rate=0.00005, regularizer_1=0.001,
                         regularizer_2=0.001, regularizer_3=0.001,
                         regularizer_4=0.001, dropout_1=0.3,
                         dropout_2=0.4, i=1):
+    """Handles one full training session"""
+
     BASE_PATH = os.path.abspath('../../data/features/Data')
 
     # NOTE: Genres aren't part of .npz files, so I used metadata.json to build
