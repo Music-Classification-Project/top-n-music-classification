@@ -20,6 +20,7 @@ def get_variables():
 def train_model_wrapper(learning_rate=0.00005, regularizer_1=0.001, regularizer_2=0.001, regularizer_3=0.001, regularizer_4=0.001, 
                         dropout_1=0.3, dropout_2=0.4, i=1): 
     BASE_PATH = os.path.abspath('../../data/features/Data')
+    
 
     #Genres aren't part of .npz files, so I used metadata.json to build a dictionary to map filename to genre
     #Load metadata
@@ -163,12 +164,12 @@ if __name__ == "__main__":
     # learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2 = get_variables()
     # train_model_wrapper(learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2)
 
-    for i in range(10):
-        learning_rate = 0.00005
-        regularizer_1 = 0.0001
-        regularizer_2 = 0.0001
-        regularizer_3 = 0.0001
-        regularizer_4 = 0.0001
-        dropout_1 = 0.3
-        dropout_2 = 0.4
-        train_model_wrapper(learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2, i)
+    learning_rate = 0.00005
+    regularizer_1 = 0.0001
+    regularizer_2 = 0.0001
+    regularizer_3 = 0.0001
+    regularizer_4 = 0.0001
+    dropout_1 = 0.3
+    dropout_2 = 0.4
+    i = int(input("Which iteration?: "))
+    train_model_wrapper(learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4, dropout_1, dropout_2, i)

@@ -6,6 +6,7 @@ This module exposes a single function: build_cnn_model(input_shape,
 num_classes) that returns a compiled Keras model ready for training.
 """
 
+# make a CRNN? 
 
 from keras.models import Sequential
 from keras.layers import (Conv2D, BatchNormalization, MaxPooling2D, Dropout,
@@ -14,7 +15,9 @@ from keras.optimizers import Adam
 from keras import regularizers
 
 def build_baseline_cnn_model(learning_rate, regularizer_1, regularizer_2, regularizer_3, regularizer_4,
-                             dropout_1, dropout_2, input_shape=(128, 130, 1), num_classes=10):
+                             dropout_1, dropout_2, input_shape=(128, 130, 1), num_classes=10): 
+    
+    # Change 10 classes 
     """
     Build and compile a simple baseline CNN for genre classification.
 
