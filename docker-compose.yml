@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  # frontend service is failing build, unsure why
+  frontend:
+    build:
+      context: ./frontend  # Path to your React app folder
+    ports:
+      - "8080:80"  # Expose React app on port 80
+    # depends_on:
+    #   - backend  # Ensure backend starts first
+    volumes:
+      - ./frontend:/app 
+
+  backend:
+    build:
+      context: ./backend  # Path to your Flask app folder
+    ports:
+      - "8080:8080"  # Expose Flask app on port 5000
+    environment:
+      - FLASK_APP=model_interface.flask_app  # Adjust this based on your app entry point
+    volumes:
+      - ./backend:/app  # Mount backend source code for easy development
+    command: flask run --host=0.0.0.0 --port=8080

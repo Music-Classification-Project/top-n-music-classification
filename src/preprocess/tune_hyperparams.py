@@ -10,7 +10,7 @@ def reset_metrics():
 
 def get_best_metrics_so_far(): 
     """Gets the metrics associated with the lowest loss. This can be passed into testing functions"""
-    with open('record_changes.csv', mode='r', newline='') as csv_file:
+    with open('record_changes_updated.csv', mode='r', newline='') as csv_file:
         val_loss = float(1000000)
         csv_reader = csv.DictReader(csv_file)
         for row in csv_reader:
@@ -109,6 +109,6 @@ def run_model_and_add_to_csv(learning_rate, regularizer_1, regularizer_2, regula
 if __name__ == "__main__":
     # results = get_best_metrics_so_far()
     # print(results) 
-    learning_rates(get_best_metrics_so_far, [float(5e-05)])
-    dropouts(get_best_metrics_so_far, [(0.3, 0.4)])
-    regularizers(get_best_metrics_so_far, [(0.001, 0.001, 0.001, 0.001)])
+    learning_rates(reset_metrics, [float(0.001)])
+    dropouts(reset_metrics, [(0.3, 0.4)])
+    regularizers(reset_metrics, [(0.001, 0.001, 0.001, 0.001)])

@@ -6,6 +6,7 @@ This module exposes a single function: build_baseline_cnn_model() that returns
 a compiled Keras model ready for training.
 """
 
+# make a CRNN? 
 
 from keras.models import Sequential
 from keras.layers import (Conv2D, BatchNormalization, MaxPooling2D, Dropout,

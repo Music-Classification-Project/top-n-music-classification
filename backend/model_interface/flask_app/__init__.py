@@ -2,6 +2,7 @@ import os
 from typing import Any, Dict
 
 from flask import Flask, jsonify, request, Response
+from flask_cors import CORS
 
 # Import the service layer
 try:
@@ -390,6 +391,7 @@ def create_app(test_config=None):
     def openapi():
         return jsonify(_build_openapi(app))
 
+
     # Minimal Swagger UI (uses CDN)
     @app.get("/docs")
     def docs():
@@ -423,3 +425,13 @@ def create_app(test_config=None):
     _enable_cors(app)
 
     return app
+
+# Testing Only 
+test_app = Flask(__name__)
+CORS(test_app)
+@test_app.route('/test', methods=['GET'])
+def test_endpoint():
+    return jsonify(message="You've reached Flask testing!")
+
+if __name__ == '__main__' and os.getenv == 'development':
+    test_app.run(debug=True)
