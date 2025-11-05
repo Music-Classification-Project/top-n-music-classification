@@ -33,9 +33,7 @@ def extract_features_from_file(file_path: str,
                                     n_mfcc=config["n_mfcc"],
                                     hop_length=config["hop_length"])
 
-        mfcc_norm = (mfcc - np.mean(mfcc)) / (np.std(mfcc) + 1e-6)
-
-        features["mfcc"] = np.expand_dims(mfcc_norm, axis=-1)
+        features["mfcc"] = np.expand_dims(mfcc, axis=-1)
 
     if config["use_mel"]:
         mel_spec = librosa.feature.melspectrogram(
@@ -46,14 +44,10 @@ def extract_features_from_file(file_path: str,
             n_mels=config["n_mels"]
         )
 
-        # Convert to decibels for better numerical stability
+        # Convert to decibels (log-scale) for better numerical stability
         mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
 
-        # Zero-centered normalization
-        mel_spec_db_norm = (mel_spec_db - np.mean(mel_spec_db)
-                            ) / (np.std(mel_spec_db) + 1e-6)
-
-        features["mel_spec"] = np.expand_dims(mel_spec_db_norm, axis=-1)
+        features["mel_spec"] = np.expand_dims(mel_spec_db, axis=-1)
 
     if config["use_chroma"]:
         chroma = librosa.feature.chroma_stft(y=audio_array, sr=sample_rate,
@@ -61,9 +55,7 @@ def extract_features_from_file(file_path: str,
                                              hop_length=config[
                                                  "hop_length"])
 
-        chroma_norm = (chroma - np.mean(chroma)) / (np.std(chroma) + 1e-6)
-
-        features["chroma"] = np.expand_dims(chroma_norm, axis=-1)
+        features["chroma"] = np.expand_dims(chroma, axis=-1)
 
     return features
 
