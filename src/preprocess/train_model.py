@@ -182,14 +182,12 @@ def train_model_wrapper(learning_rate=0.00005, regularizer_1=0.001,
 
 
 if __name__ == "__main__":
-    for i in range(1):
-        learning_rate = 0.00005
-        regularizer_1 = 0.0001
-        regularizer_2 = 0.0001
-        regularizer_3 = 0.0001
-        regularizer_4 = 0.0001
-        dropout_1 = 0.3
-        dropout_2 = 0.4
-        train_model_wrapper(learning_rate, regularizer_1, regularizer_2,
-                            regularizer_3, regularizer_4, dropout_1, dropout_2,
-                            i)
+    learning_rate = 0.00005
+    regularizer_1 = 0.0001
+    regularizer_2 = 0.0001
+    regularizer_3 = 0.0001
+    regularizer_4 = 0.0001
+    dropout_1 = 0.3
+    dropout_2 = 0.4
+    train_model_wrapper(learning_rate, regularizer_1, regularizer_2,
+                        regularizer_3, regularizer_4, dropout_1, dropout_2)
