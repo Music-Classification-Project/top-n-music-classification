@@ -19,7 +19,7 @@ import keras_tuner as kt
 from model_cnn import build_baseline_cnn_model
 from train_model_cnn import load_data, DATA_DIR, METADATA_PATH, RANDOM_SEED
 
-# --- CONFIG ---
+# CONFIG
 LOG_DIR = "./sandbox/jonas/cnn_model/tuner_logs"
 MAX_TRIALS = 15     # Number of different combinations to test
 EPOCHS = 30         # Keep small for tuning
@@ -53,11 +53,14 @@ def build_model(hp):
     return model
 
 
-def main():
-    np.random.seed(RANDOM_SEED)
+def tune_hyperparameters():
+    np.random.seed(RANDOM_SEED)  # Ensures same shuffle() result
 
-    # --- Load data ---
+    # Load data
     X, y, genres = load_data(METADATA_PATH, DATA_DIR, feature_key="mel_spec")
+
+    # Dataset-wide normalization
+    X = (X - np.mean(X)) / (np.std(X) + 1e-6)
 
     # Split data
     X_train, X_test, y_train, y_test = train_test_split(
@@ -72,7 +75,7 @@ def main():
     y_val = to_categorical(y_val, num_classes=len(genres))
     y_test = to_categorical(y_test, num_classes=len(genres))
 
-    # --- Setup tuner ---
+    # Setup tuner
     tuner_logdir = os.path.join(
         LOG_DIR, datetime.now().strftime("%Y%m%d-%H%M%S"))
     tuner = kt.RandomSearch(
@@ -84,7 +87,7 @@ def main():
         project_name='cnn_tuning'
     )
 
-    # --- Callbacks ---
+    # Callbacks
     callbacks = [
         EarlyStopping(monitor='val_loss', patience=5,
                       restore_best_weights=True),
@@ -92,7 +95,7 @@ def main():
                           patience=3, min_lr=1e-6),
     ]
 
-    # --- Run search ---
+    # Run search
     print(f"Starting hyperparameter tuning with {MAX_TRIALS} trials...")
     tuner.search(
         X_train, y_train,
@@ -103,7 +106,7 @@ def main():
         verbose=1
     )
 
-    # --- Retrieve best model and parameters ---
+    # Retrieve best model and parameters
     best_model = tuner.get_best_models(num_models=1)[0]
     best_hp = tuner.get_best_hyperparameters(num_trials=1)[0]
 
@@ -113,11 +116,12 @@ def main():
     print(f"Dropout 1: {best_hp.get('dropout_1')}")
     print(f"Dropout 2: {best_hp.get('dropout_2')}")
 
-    # --- Evaluate on test set ---
+    # Evaluate on test set
     test_loss, test_acc = best_model.evaluate(X_test, y_test, verbose=1)
     print(f"\nTest Accuracy (best model): {test_acc:.4f}")
+    print(f"\nTest Loss (best model): {test_loss:.4f}")
 
-    # --- Save best model ---
+    # Save best model
     save_path = "./sandbox/jonas/cnn_model/models/best_tuned_cnn.keras"
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     best_model.save(save_path)
@@ -129,4 +133,4 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=UserWarning)
     warnings.filterwarnings("ignore", category=FutureWarning)
 
-    main()
+    tune_hyperparameters()
