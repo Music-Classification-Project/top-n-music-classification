@@ -1,0 +1,22 @@
+# Use the official Python image from the Docker Hub
+FROM python:3.12
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the current directory contents into the container at /app
+COPY . /app
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Set environment variables
+ENV FLASK_APP=model_interface.flask_app
+ENV FLASK_ENV=development
+ENV USE_DUMMY_SERVICE=true
+
+# Expose the Flask port (default is 5000)
+EXPOSE 8080
+
+# Command to run the Flask app using Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "model_interface.flask_app:test_app"]
