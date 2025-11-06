@@ -93,18 +93,32 @@ def train_model_wrapper(learning_rate=0.00005, regularizer_1=0.001,
             if self.shuffle:
                 np.random.shuffle(self.indices)
 
-    # Split data into training and testing sets
-    train_paths, test_paths, train_labels, test_labels = train_test_split(
-        file_paths, labels, test_size=0.2, stratify=labels, random_state=27)
+    # Split data into training, validation, and test sets (70%/10%/20%)
+    train_val_paths, test_paths, train_val_labels, test_labels = (
+        train_test_split(
+            file_paths, labels, test_size=.2, stratify=labels, random_state=27
+        )
+    )
+
+    train_paths, val_paths, train_labels, val_labels = train_test_split(
+        train_val_paths, train_val_labels, test_size=.125,
+        stratify=train_val_labels, random_state=27
+    )
 
     # Build generators
     batch_size = 10
     train_gen = DataGenerator(
         train_paths, train_labels, batch_size=batch_size,
-        num_classes=len(label_map))
+        num_classes=len(label_map)
+    )
+    val_gen = DataGenerator(
+        val_paths, val_labels, batch_size=batch_size,
+        num_classes=len(label_map)
+    )
     test_gen = DataGenerator(
         test_paths, test_labels, batch_size=batch_size,
-        num_classes=len(label_map), shuffle=False)
+        num_classes=len(label_map), shuffle=False
+    )
 
     # Build model
     model = build_baseline_cnn_model(learning_rate, regularizer_1,
@@ -150,7 +164,7 @@ def train_model_wrapper(learning_rate=0.00005, regularizer_1=0.001,
     # Train model
     history = model.fit(
         train_gen,
-        validation_data=test_gen,
+        validation_data=val_gen,
         epochs=30,
         callbacks=callbacks
     )
@@ -160,14 +174,22 @@ def train_model_wrapper(learning_rate=0.00005, regularizer_1=0.001,
     best_loss = history.history['val_loss'][index_used]
     best_accuracy = history.history['val_accuracy'][index_used]
 
+    # Evaluate the model on the test set
+    print("\nEvaluating model on the test set...")
+    test_loss, test_accuracy = model.evaluate(test_gen, verbose=1)
+    print(f"Test Loss: {test_loss:.4f}")
+    print(f"Test Accuracy: {test_accuracy:.4f}")
+
     results = {"index": i, "learning_rate": learning_rate,
                "regularizers": (regularizer_1, regularizer_2, regularizer_3,
                                 regularizer_4),
                "dropouts": (dropout_1, dropout_2),
                "val_loss": best_loss,
-               "val_accuracy": best_accuracy}
-    fieldnames = ["index", "learning_rate", "regularizers",
-                  "dropouts", "val_loss", "val_accuracy"]
+               "val_accuracy": best_accuracy,
+               "test_loss": test_loss,
+               "test_accuracy": test_accuracy}
+    fieldnames = ["index", "learning_rate", "regularizers", "dropouts",
+                  "val_loss", "val_accuracy", "test_loss", "test_accuracy"]
     print(results)
 
     with open('iterate_for_best_model.csv', 'a', newline='') as file:
