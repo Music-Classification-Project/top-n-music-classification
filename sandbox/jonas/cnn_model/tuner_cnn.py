@@ -119,7 +119,7 @@ def tune_hyperparameters():
     # Evaluate on test set
     test_loss, test_acc = best_model.evaluate(X_test, y_test, verbose=1)
     print(f"\nTest Accuracy (best model): {test_acc:.4f}")
-    print(f"\nTest Loss (best model): {test_loss:.4f}")
+    print(f"Test Loss (best model): {test_loss:.4f}\n")
 
     # Save best model
     save_path = "./sandbox/jonas/cnn_model/models/best_tuned_cnn.keras"
