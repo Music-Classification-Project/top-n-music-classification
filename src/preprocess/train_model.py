@@ -176,13 +176,13 @@ def train_model_wrapper(learning_rate=0.00005, regularizer_1=0.001,
             writer.writeheader()
         writer.writerow(results)
 
-    os.chdir("final_models")
+    os.chdir("src/preprocess/final_models")
     model.save(f'final_model_{i}.keras')
-    os.chdir("../")
+    os.chdir("../../..")
 
 
 if __name__ == "__main__":
-    learning_rate = 0.00005
+    learning_rate = 0.0001
     regularizer_1 = 0.0001
     regularizer_2 = 0.0001
     regularizer_3 = 0.0001
