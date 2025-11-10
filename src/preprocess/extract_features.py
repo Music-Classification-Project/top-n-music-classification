@@ -136,7 +136,8 @@ if __name__ == "__main__":
         "n_mfcc": 13,
         "use_mfcc": True,
         "use_mel": True,
-        "use_chroma": False
+        "use_chroma": False,
+        "use_deltas": True
     }
 
     input_dir = "./data/processed/gtzan"

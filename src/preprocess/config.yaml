@@ -8,4 +8,5 @@
   "use_mfcc": True,
   "use_mel": True,
   "use_chroma": False,
+  "use_deltas": True,
 }
