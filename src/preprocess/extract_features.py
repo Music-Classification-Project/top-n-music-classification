@@ -47,7 +47,17 @@ def extract_features_from_file(file_path: str,
         # Convert to decibels (log-scale) for better numerical stability
         mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
 
-        features["mel_spec"] = np.expand_dims(mel_spec_db, axis=-1)
+        if config["use_deltas"]:
+            # Compute first and second order deltas
+            delta = librosa.feature.delta(mel_spec_db)
+            delta_delta = librosa.feature.delta(mel_spec_db, order=2)
+
+            # Stack them into 3 channels: (mel, delta, delta-delta)
+            mel_combined = np.stack([mel_spec_db, delta, delta_delta], axis=-1)
+            features["mel_spec"] = mel_combined
+        else:
+            # Single channel spectrogram
+            features["mel_spec"] = np.expand_dims(mel_spec_db, axis=-1)
 
     if config["use_chroma"]:
         chroma = librosa.feature.chroma_stft(y=audio_array, sr=sample_rate,
