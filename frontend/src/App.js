@@ -1,31 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 
-function App() {
-  const [message, setMessage] = useState(null);
+/**
+ * 
+ * Tests backend connection. Tests and displays data fetched from the backend API.
+ */
 
-  // Function to call the Flask backend
-  const fetchMessageFromFlask = () => {
-    // Replace with your actual backend URL in production
-    const apiUrl = 'https://flask-backend-444703047901.us-central1.run.app/test'; // UPDATE THIS 
+export default function App() {
 
-    fetch(apiUrl)
-      .then(response => response.json())
-      .then(data => {
-        setMessage(data.message);  // Set the message from the backend to state
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-        setMessage('Error connecting to Flask backend');
-      });
-  };
+    // State variables to hold fetched data and loading status
+    const [items, setItems] = useState([]);
+    const [predictions, setPredictions] = useState([]);
+    const [dataIsLoaded, setDataIsLoaded] = useState(false);
 
+    // Fetch data from the backend API 
+    useEffect(() => {
+        fetch("/v1/genres/recommendations?limit=5")
+            .then((res) => res.json())
+            .then((json) => {
+                setItems(json);
+                setDataIsLoaded(true);
+            });
+    }, []); 
+     // Fetch data from the backend API 
+    useEffect(() => {
+        fetch("/v1/genres/music?top_k=5")
+            .then((res) => res.json())
+            .then((json) => {
+                setPredictions(json);
+                setDataIsLoaded(true);
+            });
+    }, []); 
+    // Render loading message if data is not yet loaded
+    if (!dataIsLoaded) {
+        return (
+            <div>
+                <h1>Please wait some time....</h1>
+            </div>
+        );
+    }
+
+
+
+  // Render the fetched data
   return (
-    <div className="App">
-      <h1>React + Flask Connection Test</h1>
-      <button onClick={fetchMessageFromFlask}>Get Message from Flask</button>
-      {message && <p>{message}</p>}
-    </div>
-  );
+        <div className="App">
+            <h1> Connection Test: Recommendations</h1>
+            <div className="container">
+              {items['recommendations'].map((item) => (
+                    <div className="item" key={item.id}>
+                        <ol>
+                            <div>
+                                <strong>Title: </strong>
+                                {item.title},
+                            </div>
+                            <div>Artist: {item.artist}</div>
+                            <div>Genre: {item.genre}</div>
+                        </ol>
+                    </div>
+                ))}
+            </div>
+            <h1> Connection Test: Predictions</h1>
+            <div className="container">
+              {predictions.map((prediction) => (
+                    <div className="genre" key={genre.id}>
+                        <ol>
+                          {predictions["genre"]}
+                        </ol>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 }
-
-export default App;

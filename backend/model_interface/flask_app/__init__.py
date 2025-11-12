@@ -315,6 +315,7 @@ def _build_openapi(app: Flask) -> Dict[str, Any]:
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
+    CORS(app)
 
     # basic config
     app.config.from_mapping(
@@ -426,12 +427,3 @@ def create_app(test_config=None):
 
     return app
 
-# Testing Only 
-test_app = Flask(__name__)
-CORS(test_app)
-@test_app.route('/test', methods=['GET'])
-def test_endpoint():
-    return jsonify(message="You've reached Flask testing!")
-
-if __name__ == '__main__' and os.getenv == 'development':
-    test_app.run(debug=True)
