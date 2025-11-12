@@ -11,3 +11,4 @@ src/preprocess/__pycache__/
 src/preprocess/logs
 src/preprocess/final_models 
 dockerinstructions.txt
+frontend-vite/node_modules/
