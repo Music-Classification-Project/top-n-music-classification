@@ -7,7 +7,7 @@ bp = Blueprint("genres", __name__, url_prefix="/v1/genres")
 
 
 def _parse_int(value, default=None, minimum=None, maximum=None, name="value"):
-    """Parse an integer query/form value with optional bounds. """
+    """Parse int with optional bounds; BadRequest on error."""
     if value is None or value == "":
         return default
     try:
@@ -33,27 +33,32 @@ def _require_file():
 
 @bp.route("", methods=("GET",), strict_slashes=False)
 def info():
-    """GET /v1/genres — minimal model metadata.
+    """GET /v1/genres: model metadata.
 
-    Returns the available genres and the current model version
+    Returns available genres and model version.
     """
     svc = current_app.config["SERVICE"]
     return (
-        jsonify({"data": {"genres": getattr(svc, "labels", []), "model_version": getattr(svc, "version", "unknown")}}),
+        jsonify({
+            "data": {
+                "genres": getattr(svc, "labels", []),
+                "model_version": getattr(svc, "version", "unknown"),
+            }
+        }),
         200,
     )
 
 
 @bp.route("/music", methods=("GET", "POST"), strict_slashes=False)
 def music():
-    """/v1/genres/music — genre prediction endpoint.
+    """/v1/genres/music: genre prediction endpoint.
 
-    - GET (dummy mode only): return demo predictions for quick UI testing.
-    - POST (multipart): accept an audio file and return top-k genres.
+    - GET: Return mock predictions for UI testing.
+    - POST: Accept audio file; return top-k genres.
     """
     svc = current_app.config["SERVICE"]
     if request.method == "GET":
-        # Demo predictions in dummy mode; usage help otherwise
+        # Parse top_k from query
         top_k = _parse_int(
             request.args.get("top_k"),
             default=5,
@@ -61,6 +66,7 @@ def music():
             maximum=getattr(svc, "max_top_k", None),
             name="top_k",
         )
+        # Dummy mode: Return mock predictions for UI testing
         if bool(current_app.config.get("USE_DUMMY_SERVICE", False)):
             preds = svc.predict_genres(io.BytesIO(b""), top_k=top_k)
             results = [
@@ -101,7 +107,7 @@ def music():
     # Route audio to the service; use the file stream
     preds = svc.predict_genres(file.stream, top_k=top_k)
 
-    # Ensure JSON-safe types and schema
+    # Ensure JSON-safe types
     results = [
         {"genre": str(label), "confidence": float(score)} for (label, score) in preds
     ]
@@ -111,16 +117,18 @@ def music():
 
 @bp.route("/recommendations", methods=("GET", "POST"), strict_slashes=False)
 def recommendations():
-    """/v1/genres/recommendations — similar songs endpoint.
+    """/v1/genres/recommendations: similar songs endpoint.
 
-    - GET (dummy mode only): return demo recommendations.
-    - POST (multipart): accept an audio file and return recommendations.
+    - GET: Return mock recommendations for UI testing.
+    - POST: Accept audio file; return recommendations.
     """
     svc = current_app.config["SERVICE"]
 
     if request.method == "GET":
-        # Demo recommendations in dummy mode; usage help otherwise
+        # Parse limit from query
         limit = _parse_int(request.args.get("limit"), default=5, minimum=1, name="limit")
+
+        # Dummy mode: Return mock recommendations for UI testing
         if bool(current_app.config.get("USE_DUMMY_SERVICE", False)):
             recs = svc.get_recommendations(io.BytesIO(b""), num_recommendations=limit)
             payload = [
@@ -159,7 +167,7 @@ def recommendations():
 
     recs = svc.get_recommendations(file.stream, num_recommendations=limit)
 
-    # Coerce to JSON-safe primitives
+    # Normalize each recommendation to JSON-safe types
     payload = [
         {
             "title": str(r.get("title")),
@@ -170,3 +178,4 @@ def recommendations():
         for r in recs
     ]
     return jsonify({"recommendations": payload, "limit": limit}), 200
+

@@ -44,8 +44,8 @@ def _register_error_handlers(app: Flask) -> None:
         allowed = []
         try:
             allowed = list(e.valid_methods or [])  # type: ignore[attr-defined]
-        except Exception:
-            pass
+        except Exception:  # pragma: no cover - defensive fallback
+            pass  # pragma: no cover
         return jsonify({"error": "method_not_allowed", "allowed": allowed}), 405
 
 
@@ -427,3 +427,12 @@ def create_app(test_config=None):
 
     return app
 
+# Testing Only 
+test_app = Flask(__name__)
+CORS(test_app)
+@test_app.route('/test', methods=['GET'])
+def test_endpoint():
+    return jsonify(message="You've reached Flask testing!")
+
+if __name__ == '__main__' and os.getenv == 'development':
+    test_app.run(debug=True)
