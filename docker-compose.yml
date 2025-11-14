@@ -4,13 +4,14 @@ services:
   # frontend service is failing build, unsure why
   frontend:
     build:
-      context: ./frontend  # Path to your React app folder
+      context: ./frontend-vite  # Path to your React app folder
     ports:
-      - "8080:80"  # Expose React app on port 80
+      # - "8080:80"  # Expose React app on port 80
+      - "3000:80"
     # depends_on:
     #   - backend  # Ensure backend starts first
     volumes:
-      - ./frontend:/app 
+      - ./frontend-vite:/app 
 
   backend:
     build:

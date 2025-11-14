@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+const apiUrl = import.meta.env.VITE_API_URL;
 
 /*
 Tests connection to backend endpoints.
 */
 
+// Backend: https://flask-backend-444703047901.us-central1.run.app/
+// Backend Dev: http://localhost:5000 
 
 // Tests endpoitns by fetching data and displaying databody.
 export default function EndpointTest() {
@@ -105,7 +108,7 @@ function UploadFile() {
 
         //TODO: get this working.
         console.log(selectedFile);
-        axios.post('http://localhost:5000/v1/genres/recommendations', selectedFile);
+        axios.post(`${apiUrl}/v1/genres/music`, selectedFile);
     };    
 
     // IF file is selected return file details. Else, prompt the user to select a file.
@@ -124,6 +127,28 @@ function UploadFile() {
             );
         };
     };
+    
+    // Array of endpoints to be tested
+    const [endpoints, setEndpoints] = useState(['/docs', '/openapi.json', '/v1/genres/recommendations?limit=5', '/test',
+        '/v1/genres/recommendations',
+        '/v1/genres/music?top_k=5', '/v1/health', '/v1/models',
+        '/v1/genres', '/v1/status', '/v1/genres/music']);
+    
+    // Handle form submission to fetch data from selected endpoint
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log("Selected endpoint: ", selectedOption);
+        
+        try {
+            fetch(`${apiUrl}` + selectedOption)
+            .then((res) => res.text())
+            .then((text) => {
+                setData(text);
+            }); 
+        }
+        catch (error) {
+            console.error("Error fetching data from endpoint:", error);
+        }}; 
 
     return (
         <fieldset>
