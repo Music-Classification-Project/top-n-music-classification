@@ -44,8 +44,8 @@ def _register_error_handlers(app: Flask) -> None:
         allowed = []
         try:
             allowed = list(e.valid_methods or [])  # type: ignore[attr-defined]
-        except Exception:
-            pass
+        except Exception:  # pragma: no cover - defensive fallback
+            pass  # pragma: no cover
         return jsonify({"error": "method_not_allowed", "allowed": allowed}), 405
 
 
@@ -315,6 +315,7 @@ def _build_openapi(app: Flask) -> Dict[str, Any]:
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
+    CORS(app)
 
     # basic config
     app.config.from_mapping(
