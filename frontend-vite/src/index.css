@@ -25,7 +25,7 @@ html, body {
 }
 
 @theme {
-  --font-display: "DM", sans-serif; 
+  --font-logo: "DM", sans-serif; 
   --color-darkestgreen: #485C11;
   --color-midgreen: #8E9C78;
   --color-lightgreen: #DFECC6;
