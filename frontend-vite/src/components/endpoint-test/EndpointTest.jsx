@@ -2,16 +2,92 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 /*
-Tests and displays data fetched from the backend API endpoints.
+Tests connection to backend endpoints.
 */
+
 
 // Tests endpoitns by fetching data and displaying databody.
 export default function EndpointTest() {
+    
+    return (
+        <div>
+            <h1>Endpoint Testing</h1>
+            <div>Tests backend endpoints. Data fetched from each endpoint will appear below your selection.</div>
+            <form action='#' method="GET">
+                <EndpointDropdown />
+                <UploadFile />
+            </form>
+        </div>
+    )
+}
 
-     // State variables to hold fetched data and loading status
+function EndpointDropdown() {
+    /* 
+    Form that includes a dropdown of endpoints to test backend routes.
+    Sends a GET request to each endpoint and display the data sent back.
+    Data received is displayed below the dropdown.
+     */
+
+
+    // Array of endpoints to be tested
+    const [endpoints, setEndpoints] = useState(['/docs', '/openapi.json', 
+        '/v1/genres/recommendations?limit=5', '/v1/genres/recommendations',
+        '/v1/genres/music?top_k=5', '/v1/health','/v1/models',
+        '/v1/genres', '/v1/status', '/v1/genres/music']);
+
+    // State variables to hold fetched data and loading status
     const [data, setData] = useState('');
     const [selectedOption, setSelectedOption] = useState("");
-    const [selectedFile, setSelectedFile] = useState(null);
+
+    // Fetches data from selected endpoint.
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        console.log("Selected endpoint: ", selectedOption);
+        
+        try {
+            fetch("http://localhost:5000" + selectedOption)
+            .then((res) => res.text())
+            .then((text) => {
+                setData(text);
+            }); 
+        }
+        catch (error) {
+            console.error("Error fetching data from endpoint:", error);
+        }}; 
+    
+    return (
+        <fieldset>
+            <label htmlFor="endpoint">Endpoint: </label>
+            <select 
+                name="endpoint" 
+                id="endpoint" 
+                value={selectedOption}
+                onChange={(e) => 
+                setSelectedOption(e.target.value)}>
+
+                {endpoints.map((endpoint) => (
+                    <option value={endpoint} key={endpoint.id}>{endpoint}</option>
+                ))}
+            </select>
+            <button type="submit" value="submit" onClick={handleSubmit}>Show Data</button>
+            <div>
+                <h2>Data Received:</h2>
+                <div>{data}</div>
+            </div>
+        </fieldset>
+    )
+
+}
+
+function UploadFile() {
+    /*
+    Tests the transmission of a file to the backend. 
+    Allows the dev to select a file from the local drive.
+    File is sent to the backend via a POST request.
+    Data received is then displayed below the file upload form.
+    */
+
+        const [selectedFile, setSelectedFile] = useState(null);
 
     // Set selected file when user chooses a file
     const onFileChange = (event) => {
@@ -29,7 +105,7 @@ export default function EndpointTest() {
 
         //TODO: get this working.
         console.log(selectedFile);
-        axios.post('http://localhost:5000/v1/genres/music', selectedFile);
+        axios.post('http://localhost:5000/v1/genres/recommendations', selectedFile);
     };    
 
     // IF file is selected return file details. Else, prompt the user to select a file.
@@ -44,75 +120,18 @@ export default function EndpointTest() {
             );
         } else {
             return (
-                <div>
-                    <br />
-                    <h4>Choose a file before pressing the upload button</h4>
-                    </div>
+                    <h4>Choose a file before selecting upload.</h4>
             );
-        }
+        };
     };
-    
-    // Array of endpoints to be tested
-    const [endpoints, setEndpoints] = useState(['/docs', '/openapi.json', '/v1/genres/recommendations?limit=5', 
-        '/v1/genres/recommendations',
-        '/v1/genres/music?top_k=5', '/v1/health', '/v1/models',
-        '/v1/genres', '/v1/status', '/v1/genres/music']);
-    
-    // Handle form submission to fetch data from selected endpoint
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log("Selected endpoint: ", selectedOption);
-        
-        try {
-            fetch("http://localhost:5000" + selectedOption)
-            .then((res) => res.text())
-            .then((text) => {
-                setData(text);
-            }); 
-        }
-        catch (error) {
-            console.error("Error fetching data from endpoint:", error);
-        }}; 
 
-    
     return (
-        <div>
-            <h1>Endpoint Testing</h1>
-            <div>Tests backend endpoints. Data fetched from each endpoint will appear below your selection.</div>
-            
-            <fieldset>
-                <form action='#' method="get">
-                    <label for="endpoint">Endpoint: </label>
-                    <select 
-                        name="endpoint" 
-                        id="endpoint" 
-                        value={selectedOption}
-                        onChange={(e) => 
-                        setSelectedOption(e.target.value)}>
-                        {endpoints.map((endpoint) => (
-                            <option value={endpoint} key={endpoint.id}>{endpoint}</option>
-                        ))}
-                    </select>
-
-                    <button type="submit" value="submit" onClick={handleSubmit}>Show Data</button>
-                    
-                    <div>
-                        <h2>Data Received:</h2>
-                        <div>{data}</div>
-                    </div>
-
-                </form>
-            </fieldset>
-
-            <div>
-                <h2>File Upload Test</h2>
-                <input type="file" onChange={onFileChange} />
-                <button onClick={onFileUpload}>
-                    Upload!
-                </button>
-            </div>
-            {fileData()}
-        </div>
+        <fieldset>
+            <h2>File Upload Test</h2>
+            <input type="file" onChange={onFileChange}/>
+            <button onClick={onFileUpload}>Upload!</button>
+            <div>{fileData()}</div>
+        </fieldset>
     )
 }
 
