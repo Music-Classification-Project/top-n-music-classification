@@ -12,3 +12,4 @@ src/preprocess/logs
 src/preprocess/final_models 
 dockerinstructions.txt
 frontend-vite/node_modules/
+src/preprocess/best_model.keras

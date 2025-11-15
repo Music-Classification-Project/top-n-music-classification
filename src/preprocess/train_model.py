@@ -28,7 +28,7 @@ def train_model_wrapper(learning_rate=0.00005, regularizer_1=0.001,
                         dropout_2=0.4, i=1):
     """Handles one full training session"""
 
-    BASE_PATH = './data/features/gtzan'
+    BASE_PATH = '../../data/features/Data/'
 
     # NOTE: Genres aren't part of .npz files, so I used metadata.json to build
     # a dictionary to map filename to genre
@@ -120,6 +120,21 @@ def train_model_wrapper(learning_rate=0.00005, regularizer_1=0.001,
         num_classes=len(label_map), shuffle=False
     )
 
+    # ----- INSERT CHECKS HERE -----
+    x_test, y_test = train_gen[0]
+    print("x batch shape:", x_test.shape)
+    print("y batch shape:", y_test.shape)
+    print("sample y:", y_test[0])
+    print("label values (first 30):", train_labels[:30])
+    print("unique labels:", set(train_labels))
+    print("x batch min/max:", np.min(x_test), np.max(x_test))
+    # ----- END CHECKS -----
+    def normalized_generator(generator):
+        for x_batch, y_batch in generator:
+            x_batch = (x_batch + 80) / 80
+            yield x_batch, y_batch
+
+
     # Build model
     model = build_baseline_cnn_model(learning_rate, regularizer_1,
                                      regularizer_2, regularizer_3,
@@ -198,17 +213,17 @@ def train_model_wrapper(learning_rate=0.00005, regularizer_1=0.001,
             writer.writeheader()
         writer.writerow(results)
 
-    os.chdir("src/preprocess/final_models")
+    os.chdir("final_models")
     model.save(f'final_model_{i}.keras')
-    os.chdir("../../..")
+    os.chdir("../")
 
 
 if __name__ == "__main__":
     learning_rate = 0.0001
-    regularizer_1 = 0.0001
-    regularizer_2 = 0.0001
-    regularizer_3 = 0.0001
-    regularizer_4 = 0.0001
+    regularizer_1 = 0.0005 
+    regularizer_2 = 0.0005 
+    regularizer_3 = 0.0005
+    regularizer_4 = 0.0005 
     dropout_1 = 0.3
     dropout_2 = 0.4
     train_model_wrapper(learning_rate, regularizer_1, regularizer_2,

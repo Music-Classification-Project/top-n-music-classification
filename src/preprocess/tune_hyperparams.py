@@ -97,7 +97,7 @@ def run_model_and_add_to_csv(learning_rate, regularizer_1, regularizer_2, regula
     fieldnames = ["learning_rate", "regularizers", "dropouts", "val_loss", "val_accuracy"]
     # print(results)
 
-    with open('record_changes.csv', 'a', newline='') as file:
+    with open('record_changes_updated.csv', 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         if file.tell() == 0:
             writer.writeheader()
