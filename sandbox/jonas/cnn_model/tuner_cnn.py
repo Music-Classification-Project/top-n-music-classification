@@ -23,12 +23,12 @@ from train_model_cnn import load_data, DATA_DIR, METADATA_PATH, RANDOM_SEED
 LOG_DIR = "./sandbox/jonas/cnn_model/tuner_logs"
 MAX_TRIALS = 15     # Number of different combinations to test
 EPOCHS = 30         # Keep small for tuning
-BATCH_SIZE = 32
-VAL_SIZE = 0.2
+BATCH_SIZE = 10
+VAL_SIZE = 0.1
 TEST_SIZE = 0.2
 
 
-def build_model(hp):
+def build_model(hp, input_shape, num_classes):
     """
     Build model function for Keras Tuner.
     Defines search space for hyperparameters.
@@ -46,8 +46,8 @@ def build_model(hp):
         regularizer_4=regularizer,
         dropout_1=dropout_1,
         dropout_2=dropout_2,
-        input_shape=(128, 431, 1),  # GTZAN Mel spec shape
-        num_classes=10,
+        input_shape=input_shape,
+        num_classes=num_classes,
     )
 
     return model
@@ -66,20 +66,25 @@ def tune_hyperparameters():
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=TEST_SIZE, random_state=RANDOM_SEED, stratify=y
     )
+    val_size_relative_to_train = VAL_SIZE / (1 - TEST_SIZE)
     X_train, X_val, y_train, y_val = train_test_split(
-        X_train, y_train, test_size=VAL_SIZE, random_state=RANDOM_SEED,
-        stratify=y_train
+        X_train, y_train, test_size=val_size_relative_to_train,
+        random_state=RANDOM_SEED, stratify=y_train
     )
 
     y_train = to_categorical(y_train, num_classes=len(genres))
     y_val = to_categorical(y_val, num_classes=len(genres))
     y_test = to_categorical(y_test, num_classes=len(genres))
 
+    # Get input shape
+    input_shape = X_train.shape[1:]
+
     # Setup tuner
     tuner_logdir = os.path.join(
         LOG_DIR, datetime.now().strftime("%Y%m%d-%H%M%S"))
     tuner = kt.RandomSearch(
-        build_model,
+        lambda hp: build_model(
+            hp, input_shape=input_shape, num_classes=len(genres)),
         objective='val_accuracy',
         max_trials=MAX_TRIALS,
         executions_per_trial=1,

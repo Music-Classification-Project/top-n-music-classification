@@ -32,19 +32,19 @@ LOG_DIR = "./sandbox/jonas/cnn_model/logs"
 MODEL_SAVE_PATH = "./sandbox/jonas/cnn_model/models/baseline_cnn_gtzan.keras"
 
 # CNN hyperparameters
-LEARNING_RATE = 0.0005
-REGULARIZER_1 = 1e-5
-REGULARIZER_2 = 1e-5
-REGULARIZER_3 = 1e-5
-REGULARIZER_4 = 1e-5
+LEARNING_RATE = 5e-5
+REGULARIZER_1 = 0.0001
+REGULARIZER_2 = 0.0001
+REGULARIZER_3 = 0.0001
+REGULARIZER_4 = 0.0001
 DROPOUT_1 = 0.3
-DROPOUT_2 = 0.3
+DROPOUT_2 = 0.4
 
 # Training hyperparameters
-BATCH_SIZE = 32
-EPOCHS = 50
+BATCH_SIZE = 10
+EPOCHS = 30
 TEST_SIZE = 0.2
-VAL_SIZE = 0.2
+VAL_SIZE = 0.1
 RANDOM_SEED = 42
 
 
@@ -113,13 +113,17 @@ def train_model():
     # Load data
     X, y, genres = load_data(METADATA_PATH, DATA_DIR, feature_key="mel_spec")
 
+    # Dataset-wide normalization
+    X = (X - np.mean(X)) / (np.std(X) + 1e-6)
+
     # Train/Val/Test split
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=TEST_SIZE, random_state=RANDOM_SEED, stratify=y
     )
+    val_size_relative_to_train = VAL_SIZE / (1 - TEST_SIZE)
     X_train, X_val, y_train, y_val = train_test_split(
-        X_train, y_train, test_size=VAL_SIZE, random_state=RANDOM_SEED,
-        stratify=y_train
+        X_train, y_train, test_size=val_size_relative_to_train,
+        random_state=RANDOM_SEED, stratify=y_train
     )
 
     # One-hot encode labels
@@ -149,11 +153,11 @@ def train_model():
 
     callbacks = [
         EarlyStopping(monitor="val_loss", patience=10,
-                      restore_best_weights=True),
+                      restore_best_weights=True, verbose=1),
         ReduceLROnPlateau(monitor="val_loss", factor=0.5,
-                          patience=5, min_lr=1e-6),
+                          patience=5, min_lr=1e-6, verbose=1),
         ModelCheckpoint(MODEL_SAVE_PATH, monitor="val_loss",
-                        save_best_only=True),
+                        save_best_only=True, verbose=1),
         TensorBoard(log_dir=tensorboard_logdir),
     ]
 
