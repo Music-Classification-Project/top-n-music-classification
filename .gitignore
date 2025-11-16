@@ -12,4 +12,6 @@ src/preprocess/logs
 src/preprocess/final_models 
 dockerinstructions.txt
 frontend-vite/node_modules/
-src/preprocess/best_model.keras
+sandbox/jonas/cnn_model/logs
+sandbox/jonas/cnn_model/models
+sandbox/jonas/cnn_model/tuner_logs
