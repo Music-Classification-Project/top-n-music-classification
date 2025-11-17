@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 const apiUrl = import.meta.env.VITE_API_URL;
+// const apiUrl = "http://localhost:5000"
 
 /*
 Tests connection to backend endpoints.
@@ -48,7 +49,7 @@ function EndpointDropdown() {
         console.log("Selected endpoint: ", selectedOption);
         
         try {
-            fetch("http://localhost:5000" + selectedOption)
+            fetch( `${apiUrl}/${selectedOption}`)
             .then((res) => res.text())
             .then((text) => {
                 setData(text);
