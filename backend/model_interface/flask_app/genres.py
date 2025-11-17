@@ -136,7 +136,8 @@ def recommendations():
                     "title": str(r.get("title")),
                     "artist": str(r.get("artist")),
                     "genre": str(r.get("genre")),
-                    "similarity_score": float(r.get("similarity_score", 0.0)),
+                    "image_url": str(r.get("image_url"))
+                    # "similarity_score": float(r.get("similarity_score", 0.0)),
                 }
                 for r in recs
             ]
