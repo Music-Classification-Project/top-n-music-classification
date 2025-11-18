@@ -6,6 +6,14 @@ import json
 from typing import Dict, Any
 
 
+def normalize_feature(f: np.ndarray) -> np.ndarray:
+    mean = np.mean(f)
+    std = np.std(f)
+    if std < 1e-6:
+        return f - mean
+    return (f - mean) / std
+
+
 def extract_features_from_file(file_path: str,
                                config: Dict[str, Any]
                                ) -> Dict[str, np.ndarray]:
@@ -24,8 +32,10 @@ def extract_features_from_file(file_path: str,
          - "mel_spec": (n_mels, number of frames, channels)
          - "chroma": (12, number of frames, channels)
     """
+
     audio_array, sample_rate = librosa.load(file_path,
-                                            sr=config["sample_rate"])
+                                            sr=config["sample_rate"],
+                                            mono=True)
     features = {}
 
     if config["use_mfcc"]:
@@ -47,6 +57,9 @@ def extract_features_from_file(file_path: str,
         # Convert to decibels (log-scale) for better numerical stability
         mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
 
+        if config["normalize_per_feature"]:
+            mel_spec_db = normalize_feature(mel_spec_db)
+
         features["mel_spec"] = np.expand_dims(mel_spec_db, axis=-1)
 
     if config["use_chroma"]:
@@ -62,46 +75,85 @@ def extract_features_from_file(file_path: str,
 
 def extract_features(input_dir: str, output_dir: str, config: Dict[str, Any]
                      ) -> None:
-    """Loops through the dataset, extracts features, and saves them"""
+    """Walks through processed dataset, extracts features, and saves them.
+
+    Expected directory structure:
+        input_dir/
+            train/
+                genre/
+                    file.wav
+            val/
+                genre/
+                    file.wav
+            test/
+                genre/
+                    file.wav
+    """
+
     os.makedirs(output_dir, exist_ok=True)
     metadata = []
 
     if not os.path.isdir(input_dir):
         print(
-            f"Input directory {input_dir} does not exist, skipping directory.")
+            f"Input directory {input_dir} does not exist.")
         return output_dir
 
-    for genre in sorted(os.listdir(input_dir)):
-        # Build the path to the input_dir/genre folder
-        genre_input_path = os.path.join(input_dir, genre)
-        if not os.path.isdir(genre_input_path):
+    # Loop over splits (train/val/test)
+    for split in sorted(os.listdir(input_dir)):
+        print(f"Processing split: {split}")
+
+        # Build the input path for the split
+        split_input_path = os.path.join(input_dir, split)
+        if not os.path.isdir(split_input_path):
             continue
 
-        # Create the output_dir/genre folder
-        genre_output_path = os.path.join(output_dir, genre)
-        os.makedirs(genre_output_path, exist_ok=True)
+        # Create split folder in output
+        split_output_path = os.path.join(output_dir, split)
+        os.makedirs(split_output_path, exist_ok=True)
 
-        for file in tqdm(os.listdir(genre_input_path),
-                         desc=f"Extracting features from {genre} directory"):
-            input_filepath = os.path.join(genre_input_path, file)
+        # Loop over genres inside split
+        for genre in sorted(os.listdir(split_input_path)):
+            # Build the path to the split's genre folder
+            genre_input_path = os.path.join(split_input_path, genre)
+            if not os.path.isdir(genre_input_path):
+                continue
 
-            try:
-                # Extract and save features
-                features = extract_features_from_file(input_filepath, config)
+            # Sort files for reproducibility
+            files = sorted(os.listdir(genre_input_path))
 
-                output_filepath = os.path.join(genre_output_path,
-                                               file.replace(".wav", ".npz"))
-                np.savez(output_filepath, **features)
+            # Create the split/genre folder
+            genre_output_path = os.path.join(split_output_path, genre)
+            os.makedirs(genre_output_path, exist_ok=True)
 
-                # Add info to metadata
-                metadata.append({
-                    "genre": genre,
-                    "filename": file,
-                    "features": list(features.keys())
-                })
+            for file in tqdm(
+                    files,
+                    desc=f"Extracting features from {genre} directory"
+            ):
+                if not file.lower().endswith(".wav"):
+                    continue
 
-            except Exception as e:
-                print(f"Error processing {input_filepath}: {e}")
+                input_filepath = os.path.join(genre_input_path, file)
+
+                try:
+                    # Extract and save features
+                    features = extract_features_from_file(
+                        input_filepath, config)
+
+                    output_name = os.path.splitext(file)[0] + ".npz"
+                    output_filepath = os.path.join(genre_output_path,
+                                                   output_name)
+                    np.savez(output_filepath, **features)
+
+                    # Add info to metadata
+                    metadata.append({
+                        "split": split,
+                        "genre": genre,
+                        "filename": file,
+                        "features": list(features.keys())
+                    })
+
+                except Exception as e:
+                    print(f"Error processing {input_filepath}: {e}")
 
     # Save metadata to output_dir/metadata.json
     metadata_path = os.path.join(output_dir, "metadata.json")
@@ -113,8 +165,6 @@ def extract_features(input_dir: str, output_dir: str, config: Dict[str, Any]
 
 if __name__ == "__main__":
     import warnings
-
-    # Ignore expected warnings
     warnings.filterwarnings("ignore", category=UserWarning)
     warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -124,11 +174,13 @@ if __name__ == "__main__":
         "hop_length": 512,
         "n_mels": 128,
         "n_mfcc": 13,
-        "use_mfcc": True,
+        "use_mfcc": False,
         "use_mel": True,
-        "use_chroma": False
+        "use_chroma": False,
+        "normalize_per_feature": True
     }
 
     input_dir = "./data/processed/gtzan"
     output_dir = "./data/features/gtzan"
+
     extract_features(input_dir, output_dir, CONFIG)
