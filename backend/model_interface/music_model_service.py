@@ -254,7 +254,59 @@ class MusicModelService:
             AudioProcessingError: If the audio file is corrupt or in an
                                   unsupported format.
         """
-        pass
+        # Predict genres
+        genre_results = self.predict_genres(audio_data, top_k=1)
+
+        # Get genre with highest confidence
+        top_genre = genre_results[0][0]
+
+        # Call Last.fm API to get recommendations
+        API_KEY = "bdd956594989c58ec49cff748be79644"
+        BASE_URL = "http://ws.audioscrobbler.com/2.0/"
+
+        params = {
+            "method": "tag.gettoptracks",
+            "tag": top_genre, 
+            "api_key": API_KEY, 
+            "format": "json"
+        }
+        
+        response = requests.get(BASE_URL, params=params)
+        if response.status_code != 200:
+            return jsonify({"error": "Error calling Last.fm"}), 500
+
+        # Parse recommendations
+        recs_list = []
+        i=1
+        while i <= 5:
+            new_value = response.json()["tracks"]["track"][i]
+            artist=(new_value["artist"]["name"]).replace(" ", "+")
+            track=(new_value["name"].replace(" ", "+"))
+            
+            get_image_params = {
+                "method":"track.getInfo",
+                "api_key":API_KEY,
+                "artist":artist,
+                "track":track,
+                "format":"json"
+            }
+            new_image_response = requests.get(BASE_URL, params=get_image_params).json()
+            for key, value in new_image_response.items():
+                # print(value["artist"])
+                # List of title, artist, genre, album image 
+                new_value["image"]=value["album"]["image"]
+            
+            recs_list.append(
+                SongRecommendation(
+                    title=new_value["name"],
+                    artist=new_value["artist"]["name"],
+                    genre=top_genre,
+                    image_url=new_value["image"][-1]["#text"]
+                )
+            )
+            i+=1
+
+        return(recs_list)
 
 
 class DummyMusicModelService:
