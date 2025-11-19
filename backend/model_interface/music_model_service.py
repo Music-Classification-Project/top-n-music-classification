@@ -1,6 +1,7 @@
 from typing import Union, IO, List, TypedDict
 from pathlib import Path
-
+import requests
+from flask import Flask, jsonify
 
 # Work in progess 
 class SongRecommendation(TypedDict):
@@ -16,7 +17,8 @@ class SongRecommendation(TypedDict):
     title: str
     artist: str
     genre: str
-    similarity_score: float
+    # similarity_score: float
+    image_url: str
 
 
 class AudioProcessingError(Exception):
@@ -166,45 +168,98 @@ class DummyMusicModelService:
             ("rock", 0.85),
             ("pop", 0.10),
             ("jazz", 0.05),
+            ("blues", 0.06),
+            ("classical", 0.95),
+            ("disco", 0.99),
+            ("jazz", 0.80)
         ][:top_k]
 
-    def get_recommendations(
-        self, audio_data: Union[str, IO[bytes]], num_recommendations: int = 5
-    ) -> List[SongRecommendation]:
-        """Always returns the same fixed set of song recommendations."""
-        fixed_recommendations: List[SongRecommendation] = [
-            SongRecommendation(
-                title="Black Hole Sun",
-                artist="Soundgarden",
-                genre="rock",
-                similarity_score=0.95,
-            ),
-            SongRecommendation(
-                title="Man In The Box",
-                artist="Alice In Chains",
-                genre="rock",
-                similarity_score=0.91,
-            ),
-            SongRecommendation(
-                title="Lithium",
-                artist="Nirvana",
-                genre="rock",
-                similarity_score=0.89,
-            ),
-            SongRecommendation(
-                title="Even Flow",
-                artist="Perl Jam",
-                genre="rock",
-                similarity_score=0.87,
-            ),
-            SongRecommendation(
-                title="Would?",
-                artist="Alice In Chains",
-                genre="rock",
-                similarity_score=0.85,
-            ),
-        ]
-        return fixed_recommendations[:num_recommendations]
+    def get_recommendations(self, audio_data: Union[str, IO[bytes]], num_recommendations: int = 5) -> List[SongRecommendation]:
+        genre_results = self.predict_genres(audio_data)
+        # get genre with max similarity score
+        genre = max(genre_results, key=lambda x: x[1])[0]
+
+        # call Last FM API 
+        API_KEY = "bdd956594989c58ec49cff748be79644"
+        BASE_URL = "http://ws.audioscrobbler.com/2.0/"
+
+        params = {
+            "method":"tag.gettoptracks",
+            "tag":genre, 
+            "api_key":API_KEY, 
+            "format":"json"
+        }
+
+        response = requests.get(BASE_URL, params=params)
+        if response.status_code != 200:
+            return jsonify({"error": "Error calling Last.fm"}), 500
+
+        recs_list = []
+        i=1
+        while i <= 5:
+            new_value = response.json()["tracks"]["track"][i]
+            artist=(new_value["artist"]["name"]).replace(" ", "+")
+            track=(new_value["name"].replace(" ", "+"))
+            
+            get_image_params = {
+                "method":"track.getInfo",
+                "api_key":API_KEY,
+                "artist":artist,
+                "track":track,
+                "format":"json"
+            }
+            new_image_response = requests.get(BASE_URL, params=get_image_params).json()
+            for key, value in new_image_response.items():
+                # print(value["artist"])
+                # List of title, artist, genre, album image 
+                new_value["image"]=value["album"]["image"]
+            
+            recs_list.append(
+                SongRecommendation(
+                    title=new_value["name"],
+                    artist=new_value["artist"]["name"],
+                    genre=genre,
+                    image_url=new_value["image"][-1]["#text"]
+                )
+            )
+            i+=1
+
+        return(recs_list)
+
+        # """Always returns the same fixed set of song recommendations."""
+        # fixed_recommendations: List[SongRecommendation] = [
+        #     SongRecommendation(
+        #         title="Black Hole Sun",
+        #         artist="Soundgarden",
+        #         genre="rock",
+        #         similarity_score=0.95,
+        #     ),
+        #     SongRecommendation(
+        #         title="Man In The Box",
+        #         artist="Alice In Chains",
+        #         genre="rock",
+        #         similarity_score=0.91,
+        #     ),
+        #     SongRecommendation(
+        #         title="Lithium",
+        #         artist="Nirvana",
+        #         genre="rock",
+        #         similarity_score=0.89,
+        #     ),
+        #     SongRecommendation(
+        #         title="Even Flow",
+        #         artist="Perl Jam",
+        #         genre="rock",
+        #         similarity_score=0.87,
+        #     ),
+        #     SongRecommendation(
+        #         title="Would?",
+        #         artist="Alice In Chains",
+        #         genre="rock",
+        #         similarity_score=0.85,
+        #     ),
+        # ]
+        # return fixed_recommendations[:num_recommendations]
 
 
 if __name__ == "__main__":
