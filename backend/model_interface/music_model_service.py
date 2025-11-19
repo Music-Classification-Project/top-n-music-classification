@@ -1,7 +1,15 @@
 from typing import Union, IO, List, TypedDict
 from pathlib import Path
+import tempfile
+import os
+import shutil
+import numpy as np
 import requests
 from flask import Flask, jsonify
+
+# Import preprocessing functions
+from src.preprocess.normalize_data import normalize_audio
+from src.preprocess.extract_features import extract_features_from_file
 
 # Work in progess 
 class SongRecommendation(TypedDict):
@@ -59,18 +67,62 @@ class MusicModelService:
         # Basic service metadata; adjust as the real model is integrated
         self.model_path: Path = path
         self.loaded: bool = True
-        self.version: str = "unknown"
-        self.labels: List[str] = []
+        self.model_name: str = "music-genre-classifier"
+        self.version: str = "1.0"
+        self.dummy_mode: bool = False
+
+        # GTZAN genres in alphabetical order (must matching training)
+        self.labels: List[str] = [
+            "blues",
+            "classical", 
+            "country",
+            "disco",
+            "hiphop",
+            "jazz",
+            "metal",
+            "pop",
+            "reggae",
+            "rock"
+        ]
+        self.class_count: int = len(self.labels)
+
+        # Audio preprocessing config (must match training)
         self.sample_rate: int = 22050
+        self.input_duration_sec: int = 10
+        self.channels: int = 1
+
+        # Feature extraction config (must match training)
+        self.feature_config = {
+            "sample_rate": 22050,
+            "n_fft": 2048,
+            "hop_length": 512,
+            "n_mels": 128,
+            "n_mfcc": 13,
+            "use_mfcc": False,
+            "use_mel": True,
+            "use_chroma": False,
+            "normalize_per_feature": True
+        }
+
+        # Store individual values for API metadata
+        self.n_mels: int = 128
+        self.n_mfcc: int = 13
+        self.n_fft: int = 2048
+        self.hop_length: int = 512
+        self.feature_types: List[str] = ["mel_spec"]
+
+        # Service constraints
         self.max_top_k: int = 10
+        self.max_file_mb: int = 32
 
     def _load_model(self, path: Path):
         """Internal helper to load the underlying model object.
 
-        Replace this stub with the concrete framework loader (e.g., TensorFlow/PyTorch).
+        Loads a Keras model from the specified path.
         """
-        # TODO: Implement framework-specific loading
-        return object()
+        import tensorflow as tf
+        model = tf.keras.models.load_model(path)
+        return model
 
     def predict_genres(
         self, audio_data: Union[str, IO[bytes]], top_k: int = 5
@@ -93,7 +145,95 @@ class MusicModelService:
                                   unsupported format.
         """
         
-        pass
+        temp_input_file = None
+        temp_output_dir = None
+
+        try:
+            # Handle file input
+            if isinstance(audio_data, str):
+                # File path
+                input_file_path = audio_data
+                if not Path(input_file_path).exists():
+                    raise FileNotFoundError(f"Audio file not found: {input_file_path}")
+            else: 
+                # File stream
+                temp_input_file = tempfile.NamedTemporaryFile(
+                    delete=False, suffix=".wav"
+                )
+                temp_input_file.write(audio_data.read())
+                temp_input_file.close()
+                input_file_path = temp_input_file.name
+
+            # Normalize audio
+            temp_output_dir = tempfile.mkdtemp()
+            normalized_path = normalize_audio(
+                input_file_path, 
+                temp_output_dir,
+                sample_rate=self.sample_rate,
+                duration=self.input_duration_sec
+            )
+
+            if normalized_path is None:
+                raise AudioProcessingError("Failed to normalize audio file")
+            
+            # Extract features
+            features = extract_features_from_file(
+                str(normalized_path),
+                self.feature_config
+            )
+
+            if "mel_spec" not in features:
+                raise AudioProcessingError("Failed to extract mel spectrogram")
+            
+            mel_spec = features["mel_spec"]
+
+            # Prepare input for model
+            target_frames = 431
+            current_frames = mel_spec.shape[1]
+            
+            if current_frames < target_frames:
+                # Pad with zeros if too short
+                padding = target_frames - current_frames
+                mel_spec = np.pad(mel_spec, ((0, 0), (0, padding), (0, 0)), mode='constant')
+            elif current_frames > target_frames:
+                # Trim if too long
+                mel_spec = mel_spec[:, :target_frames, :]
+
+            # Add batch dimension
+            mel_spec = np.expand_dims(mel_spec, axis=0)  # (1, 128, 431, 1)
+
+            # Run model prediction
+            predictions = self.model.predict(mel_spec, verbose=0)
+
+            # predictions shape: (1, num_classes)
+            probabilities = predictions[0]
+
+            # Pair genres with probabilities and sort
+            genre_probs = list(zip(self.labels, probabilities))
+            genre_probs.sort(key=lambda x: x[1], reverse=True)
+
+            # Return top_k results
+            top_results = genre_probs[:top_k]
+
+            return top_results
+        
+        except FileNotFoundError:
+            raise
+        except Exception as e:
+            raise AudioProcessingError(f"Error processing audio: {str(e)}") from e
+        finally:
+            # Clean up temporary files
+            if temp_input_file is not None:
+                try:
+                    os.unlink(temp_input_file.name)
+                except Exception:
+                    pass
+            
+            if temp_output_dir is not None:
+                try:
+                    shutil.rmtree(temp_output_dir)
+                except Exception:
+                    pass
 
     def get_recommendations(
         self, audio_data: Union[str, IO[bytes]], num_recommendations: int = 10
