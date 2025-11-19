@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Navbar from '../navbar/NavBar.jsx'
 
 /*
 Tests connection to backend endpoints.
