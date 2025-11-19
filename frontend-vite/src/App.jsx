@@ -1,16 +1,17 @@
 import './App.css'
-import Navbar from './components/NavBar'
-import UploadElement from './components/UploadElement'
 import HomePage from './components/HomePage'
+import { BrowserRouter as Router, Routes, Route, BrowserRouter } from 'react-router-dom';
+
 
 function App() {
 
   return (
-    <>
-    <Navbar />
-    <HomePage />
-    </>
-  )
-}
+    <BrowserRouter>
+      <Routes>
+        <Route index element = {<HomePage />}/>
+      </Routes>
+    </BrowserRouter>
+  );
+};
 
 export default App
