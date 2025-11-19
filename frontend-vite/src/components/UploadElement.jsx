@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import upload from "../assets/cloud-upload.svg";
 
 function UploadElement(){
@@ -10,6 +9,7 @@ function UploadElement(){
     */
    // SET file
     const [selectedFile, setSelectedFile] = useState(null);
+    const [data, setData] = useState(null)
     const apiUrl = "http://localhost:5000"
 
     // Set selected file when user chooses a file
@@ -20,14 +20,21 @@ function UploadElement(){
     // Saves the file as a Formdata object 
     const onFileUpload = () => {
         const formData = new FormData();
-        formData.append(
-            "myFile",
-            selectedFile,
-            selectedFile.name
-        );
+        formData.append("file", selectedFile)
+        formData.append("top_k", "5")
         console.log(selectedFile);
-        axios.post(`${apiUrl}/v1/genres/music`, selectedFile);
-    };
+        try {
+            fetch(`${apiUrl}/v1/genres/music`, 
+                {method: "POST", body: formData})
+            .then((res) => res.text())
+            .then((text) => {
+                setData(text);
+            }); 
+        }
+        catch (error) {
+            console.error("Error fetching data from endpoint:", error);
+        }}; 
+    
 
     // IF file is selected return file details. Else, prompt the user to select a file.
     const fileData = () => {
@@ -44,27 +51,9 @@ function UploadElement(){
             );
         };
     };
-
-    // Handle form submission to fetch data from selected endpoint
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log("Selected endpoint: ", selectedOption);
-        
-        try {
-            fetch(`${apiUrl}` + selectedOption)
-            .then((res) => res.text())
-            .then((text) => {
-                setData(text);
-            }); 
-        }
-        catch (error) {
-            console.error("Error fetching data from endpoint:", error);
-        }}; 
-
         return (
         <fieldset>
-            <label for="doc">
-
+            <label>
                 <div class="border-1 border-dashed border-lightgreen align-center my-4 grid grid-cols-1 justify-items-center">
                     <div>
                         <div class="font-[DM Sans] font-bold text-gray-800">Upload</div>
@@ -76,20 +65,17 @@ function UploadElement(){
 
                 <div class="py-4">
                     <div class="">
-                    {fileData()}
+                        {fileData()}
                     </div>
                     <button 
-                    class="text-white bg-midgreen rounded-sm hover:bg-success-strong focus:ring-4 focus:success-subtle shadow-xs text-small  w-full py-1.5 my-2 focus:outline-none"
-                    onClick={onFileUpload}>
-                    UPLOAD FILE
+                        class="text-white bg-midgreen rounded-sm hover:bg-success-strong focus:ring-4 focus:success-subtle shadow-xs text-small  w-full py-1.5 my-2 focus:outline-none"
+                        onClick={onFileUpload}>
+                        UPLOAD FILE
                     </button>
-                    
                 </div>
-            
             </label>
         </fieldset>
     )
-
 }
 
 
