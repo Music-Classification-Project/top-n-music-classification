@@ -1,10 +1,11 @@
 import React from "react";
 import soundWave from "../assets/audio-wave.svg"
 
+/* Navbar Element - to be placed in header of every page. */
+
 const Navbar = () => {
     /*
     Navbar to be displayed at the header of every page.
-    TODO: auto adjust the the width to window size
     */
    
     return (    
