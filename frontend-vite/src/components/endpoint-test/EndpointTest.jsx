@@ -10,7 +10,7 @@ Tests connection to backend endpoints.
 // Backend: https://flask-backend-444703047901.us-central1.run.app/
 // Backend Dev: http://localhost:5000 
 
-// Tests endpoitns by fetching data and displaying databody.
+// Tests endpoints by fetching data and displaying databody.
 export default function EndpointTest() {
     
     return (
