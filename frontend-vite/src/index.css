@@ -13,6 +13,8 @@ html, body, :root {
   --color-darkestgreen: #485C11;
   --color-midgreen: #8E9C78;
   --color-lightgreen: #DFECC6;
+  --color-lightgrey: #7B7E86;
+  --tracking-1: 0.06em;
 }
 
 
