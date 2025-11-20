@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import upload from "../assets/cloud-upload.svg";
+import { useNavigate } from 'react-router-dom';
 
 function UploadElement(){
     /*
@@ -11,6 +12,8 @@ function UploadElement(){
     const [selectedFile, setSelectedFile] = useState(null);
     const [data, setData] = useState(null)
     const apiUrl = "http://localhost:5000"
+    const navigate = useNavigate();
+            
 
     // Set selected file when user chooses a file
     const onFileChange = (event) => {
@@ -29,7 +32,9 @@ function UploadElement(){
             .then((res) => res.text())
             .then((text) => {
                 setData(text);
-            }); 
+                navigate('/results', {data});
+            });
+
         }
         catch (error) {
             console.error("Error fetching data from endpoint:", error);
