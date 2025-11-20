@@ -1,9 +1,9 @@
 from typing import Union, IO, List, TypedDict
 from pathlib import Path
 import requests
-from flask import Flask, jsonify
+from flask import jsonify
 
-# Work in progess 
+
 class SongRecommendation(TypedDict):
     """
     A dictionary representing a single song recommendation.
