@@ -6,19 +6,18 @@ This module exposes a single function: build_baseline_cnn_model() that returns
 a compiled Keras model ready for training.
 """
 
-# make a CRNN? 
 
 from keras.models import Sequential
 from keras.layers import (Conv2D, BatchNormalization, MaxPooling2D, Dropout,
-                          Flatten, Dense)
+                          Dense, GlobalAveragePooling2D)
 from keras.optimizers import Adam
 from keras import regularizers
 
 
 def build_baseline_cnn_model(learning_rate, regularizer_1, regularizer_2,
                              regularizer_3, regularizer_4, dropout_1,
-                             dropout_2, input_shape=(128, 130, 1),
-                             num_classes=10):
+                             dropout_2, input_shape,
+                             num_classes):
     """
     Build and compile a simple baseline CNN for genre classification.
 
@@ -77,8 +76,7 @@ def build_baseline_cnn_model(learning_rate, regularizer_1, regularizer_2,
     # small 2D "images" (called feature maps). This layer make the final
     # decision.
 
-    # Flatten features for dense layers
-    model.add(Flatten())
+    model.add(GlobalAveragePooling2D())
 
     # Dense layer that takes all the high-level features and learns how to
     # combine them to make a final decision.
@@ -101,7 +99,22 @@ def build_baseline_cnn_model(learning_rate, regularizer_1, regularizer_2,
 
 
 if __name__ == "__main__":
-    # Example usage of a test build
-    test_model = build_baseline_cnn_model(input_shape=(128, 130, 1),
-                                          num_classes=10)
+    LEARNING_RATE = 5e-5
+    REGULARIZER_1 = 0.0001
+    REGULARIZER_2 = 0.0001
+    REGULARIZER_3 = 0.0001
+    REGULARIZER_4 = 0.0001
+    DROPOUT_1 = 0.3
+    DROPOUT_2 = 0.4
+
+    test_model = build_baseline_cnn_model(
+        learning_rate=LEARNING_RATE,
+        regularizer_1=REGULARIZER_1,
+        regularizer_2=REGULARIZER_2,
+        regularizer_3=REGULARIZER_3,
+        regularizer_4=REGULARIZER_4,
+        dropout_1=DROPOUT_1,
+        dropout_2=DROPOUT_2
+    )
+
     test_model.summary()
