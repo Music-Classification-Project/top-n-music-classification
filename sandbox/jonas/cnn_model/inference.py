@@ -3,8 +3,8 @@ from typing import Any
 
 
 import os
-from keras import keras
-from types import Dict, Any
+import keras
+from typing import Dict, Any
 import numpy as np
 import librosa
 
@@ -44,8 +44,9 @@ class GenrePredictor:
         hop_samples = window_samples
 
         if len(audio) < window_samples:
+            window_seconds = self.config["window_seconds"]
             print(
-                f"Audio file is less than {self.config["window_seconds"]} long"
+                f"Audio file is less than {window_seconds} long"
             )
             return np.array([])
 
