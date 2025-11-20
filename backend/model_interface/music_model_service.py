@@ -68,7 +68,7 @@ class MusicModelService:
     def _load_model(self, path: Path):
         """Internal helper to load the underlying model object.
 
-        Replace this stub with the concrete framework loader 
+        Replace this stub with the concrete framework loader
         (e.g., TensorFlow/PyTorch).
         """
         # TODO: Implement framework-specific loading
