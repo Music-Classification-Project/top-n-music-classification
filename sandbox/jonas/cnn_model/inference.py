@@ -1,7 +1,11 @@
 # flake8: noqa
+from typing import Any
+
+
 import os
 from keras import keras
 from types import Dict, Any
+import numpy as np
 
 class GenrePredictor:
     def __init__(self, model_path: str, config: Dict[str, Any]):
@@ -23,13 +27,38 @@ class GenrePredictor:
             self.config["sample_rate"] * self.config["window_seconds"]
             )
 
-    def _preprocess_audio():
+    def _preprocess_audio(self, audio_path: str) -> np.ndarray:
         """Loads audio, slices into windows, and converts to spectrograms."""
         pass
 
-    def predict():
+    def predict(self, audio_path: str) -> Dict:
         """Performs full song prediction."""
-        pass
+
+        X = self._preprocess_audio(audio_path)
+
+        if len(X) == 0:
+            return {"error": "could not process audio"}
+
+        predictions = self.model.predict(X, verbose=0)
+
+        # Average probabilities across all windows (Soft Voting)
+        avg_probabilities = np.mean(predictions, axis=0)
+
+        top_index = np.argmax(avg_probabilities)
+        predicted_genre = self.genres[top_index]
+        confidence = avg_probabilities[top_index]
+
+        result = {
+            "filename": os.path.basename(audio_path),
+            "predicted_genre": predicted_genre,
+            "confidence": float(f"{confidence: .2f}"),
+            "all_probabilities": {
+                genre: float(f"{prob :.4f}")
+                for genre, prob in zip(self.genres, avg_probabilities)
+            }
+        }
+
+        return result
 
 
 if __name__ == "__main__":
