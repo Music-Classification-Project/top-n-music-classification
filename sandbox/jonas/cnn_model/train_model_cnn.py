@@ -114,13 +114,35 @@ def train_model():
     print(f"Genres: {genres}")
     num_classes = len(genres)
 
-    # # Dataset-wide normalization (fit on training set only)
-    # mean = np.float32(np.mean(X_train))
-    # std = np.float32(np.std(X_train) + 1e-6)
+    print("X_train.shape:", X_train.shape)
+    print("X_train.min():", X_train.min())
+    print("X_train.max():", X_train.max())
+    print("X_train.mean():", X_train.mean())
+    print("X_train.std():", X_train.std())
 
-    # X_train = (X_train - mean) / std
-    # X_val = (X_val - mean) / std
-    # X_test = (X_test - mean) / std
+    for i in range(0, 26):
+        print("Sample mel_spec shape:", X_train[i].shape)
+        print("Sample mel_spec min/max/mean:", X_train[i].min(),
+              X_train[i].max(), X_train[i].mean())
+
+    # Clip spectrograms
+    X_train = np.clip(X_train, a_min=-80, a_max=0)
+    X_val = np.clip(X_val, a_min=-80, a_max=0)
+    X_test = np.clip(X_test, a_min=-80, a_max=0)
+
+    # Standardize per-frequency-bin
+    mean = np.mean(X_train, axis=(0, 2, 3), keepdims=True)
+    std = np.std(X_train, axis=(0, 2, 3), keepdims=True) + 1e-6
+
+    X_train = (X_train - mean) / std
+    X_val = (X_val - mean) / std
+    X_test = (X_test - mean) / std
+
+    print("After normalization:")
+    print("X_train.min():", X_train.min())
+    print("X_train.max():", X_train.max())
+    print("X_train.mean():", X_train.mean())
+    print("X_train.std():", X_train.std())
 
     # One-hot encode labels
     y_train = to_categorical(y_train, num_classes=num_classes)
@@ -129,6 +151,8 @@ def train_model():
 
     # Build model
     input_shape = X_train.shape[1:]
+
+    print(f"Model input_shape: {input_shape}")
 
     model = build_baseline_cnn_model(
         learning_rate=LEARNING_RATE,
