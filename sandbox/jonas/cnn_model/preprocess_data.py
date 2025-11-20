@@ -134,7 +134,7 @@ def preprocess_dataset(raw_dir: str, processed_dir: str, config: Dict[str, Any]
                     unsliced_dest_path = os.path.join(
                         unsliced_genre_path, filename
                     )
-                    shutil.copy2(file_path, unsliced_dest_path)                    
+                    shutil.copy2(file_path, unsliced_dest_path)
 
         print(f"Finished processing genre: {genre}.")
 
