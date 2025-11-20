@@ -9,15 +9,15 @@ a compiled Keras model ready for training.
 
 from keras.models import Sequential
 from keras.layers import (Conv2D, BatchNormalization, MaxPooling2D, Dropout,
-                          Flatten, Dense, GlobalAveragePooling2D)
+                          Dense, GlobalAveragePooling2D)
 from keras.optimizers import Adam
 from keras import regularizers
 
 
 def build_baseline_cnn_model(learning_rate, regularizer_1, regularizer_2,
                              regularizer_3, regularizer_4, dropout_1,
-                             dropout_2, input_shape=(128, 130, 1),
-                             num_classes=10):
+                             dropout_2, input_shape,
+                             num_classes):
     """
     Build and compile a simple baseline CNN for genre classification.
 
@@ -76,8 +76,7 @@ def build_baseline_cnn_model(learning_rate, regularizer_1, regularizer_2,
     # small 2D "images" (called feature maps). This layer make the final
     # decision.
 
-    # Flatten features for dense layers
-    model.add(Flatten())
+    model.add(GlobalAveragePooling2D())
 
     # Dense layer that takes all the high-level features and learns how to
     # combine them to make a final decision.
@@ -99,61 +98,6 @@ def build_baseline_cnn_model(learning_rate, regularizer_1, regularizer_2,
     return model
 
 
-def build_improved_cnn_model(
-    learning_rate,
-    regularizer_1, regularizer_2, regularizer_3, regularizer_4,
-    dropout_1, dropout_2,
-    input_shape=(128, 130, 1),
-    num_classes=10,
-):
-    model = Sequential(name="Improved_CNN")
-
-    # ---- BLOCK 1 ----
-    model.add(Conv2D(32, (3, 3), padding='same', activation='relu',
-                     input_shape=input_shape,
-                     kernel_regularizer=regularizers.l2(regularizer_1)))
-    model.add(BatchNormalization())
-    model.add(Conv2D(32, (3, 3), padding='same', activation='relu'))
-    model.add(BatchNormalization())
-    model.add(MaxPooling2D((2, 2)))
-
-    # ---- BLOCK 2 ----
-    model.add(Conv2D(64, (3, 3), padding='same', activation='relu',
-                     kernel_regularizer=regularizers.l2(regularizer_2)))
-    model.add(BatchNormalization())
-    model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
-    model.add(BatchNormalization())
-    model.add(MaxPooling2D((2, 2)))
-
-    # ---- BLOCK 3 ----
-    model.add(Conv2D(128, (3, 3), padding='same', activation='relu',
-                     kernel_regularizer=regularizers.l2(regularizer_3)))
-    model.add(BatchNormalization())
-    model.add(MaxPooling2D((2, 2)))
-    model.add(Dropout(dropout_1))
-
-    # ---- BLOCK 4 ----
-    model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
-    model.add(BatchNormalization())
-    model.add(MaxPooling2D((2, 2)))
-
-    # ---- DENSE ----
-    model.add(GlobalAveragePooling2D())
-    model.add(Dense(128, activation='relu',
-                    kernel_regularizer=regularizers.l2(regularizer_4)))
-    model.add(Dropout(dropout_2))
-
-    model.add(Dense(num_classes, activation='softmax'))
-
-    model.compile(
-        optimizer=Adam(learning_rate=learning_rate),
-        loss='categorical_crossentropy',
-        metrics=['accuracy']
-    )
-
-    return model
-
-
 if __name__ == "__main__":
     # Example usage of a test build
     LEARNING_RATE = 5e-5
@@ -164,7 +108,7 @@ if __name__ == "__main__":
     DROPOUT_1 = 0.3
     DROPOUT_2 = 0.4
 
-    test_model = build_improved_cnn_model(
+    test_model = build_baseline_cnn_model(
         learning_rate=LEARNING_RATE,
         regularizer_1=REGULARIZER_1,
         regularizer_2=REGULARIZER_2,

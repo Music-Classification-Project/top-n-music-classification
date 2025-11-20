@@ -11,7 +11,8 @@ import os
 import shutil
 import numpy as np
 import requests
-from flask import Flask, jsonify
+from flask import jsonify
+
 
 # Import preprocessing functions
 from src.preprocess.normalize_data import normalize_audio
@@ -44,9 +45,9 @@ class ModelLoadError(Exception):
     """Raised when the model fails to load properly."""
     pass
 
-# Work in progess (only use Dummy class for now - not functional)
+
+# Work in progress (only use Dummy class for now - not functional)
 class MusicModelService:
-    # string path or pathlib.Path object
     def __init__(self, model_path: Union[str, Path]) -> None:
         """Loads the trained model and initializes service metadata.
 
@@ -70,7 +71,6 @@ class MusicModelService:
         except Exception as e:
             raise ModelLoadError(f"Failed to load model at {path}") from e
 
-        # Basic service metadata; adjust as the real model is integrated
         self.model_path: Path = path
         self.loaded: bool = True
         self.model_name: str = "music-genre-classifier"
@@ -322,7 +322,8 @@ class DummyMusicModelService:
         """Simulates loading a trained model from disk."""
         self.model_path = model_path
         self.loaded = True
-        # Provide sensible defaults for frontend metadata (aligned to src/preprocess)
+        # Provide sensible defaults for frontend metadata
+        # (aligned to src/preprocess)
         self.model_name = "dummy-music-model"
         self.version = "dummy-1.0"
         self.dummy_mode = True
@@ -342,7 +343,8 @@ class DummyMusicModelService:
         ]
         self.class_count = len(self.labels)
 
-        # Audio and feature config matched to extract_features.py and normalize_data.py
+        # Audio and feature config matched to extract_features.py and
+        # normalize_data.py
         self.sample_rate = 22050  # Hz
         self.input_duration_sec = 10  # seconds (see normalize_data.DURATION)
         self.channels = 1  # librosa.load(..., mono=True)
@@ -372,20 +374,22 @@ class DummyMusicModelService:
             ("jazz", 0.80)
         ][:top_k]
 
-    def get_recommendations(self, audio_data: Union[str, IO[bytes]], num_recommendations: int = 5) -> List[SongRecommendation]:
+    def get_recommendations(self, audio_data: Union[str, IO[bytes]],
+                            num_recommendations: int = 5
+                            ) -> List[SongRecommendation]:
         genre_results = self.predict_genres(audio_data)
         # get genre with max similarity score
         genre = max(genre_results, key=lambda x: x[1])[0]
 
-        # call Last FM API 
+        # call Last FM API
         API_KEY = "bdd956594989c58ec49cff748be79644"
         BASE_URL = "http://ws.audioscrobbler.com/2.0/"
 
         params = {
-            "method":"tag.gettoptracks",
-            "tag":genre, 
-            "api_key":API_KEY, 
-            "format":"json"
+            "method": "tag.gettoptracks",
+            "tag": genre,
+            "api_key": API_KEY,
+            "format": "json"
         }
 
         response = requests.get(BASE_URL, params=params)
@@ -393,25 +397,26 @@ class DummyMusicModelService:
             return jsonify({"error": "Error calling Last.fm"}), 500
 
         recs_list = []
-        i=1
+        i = 1
         while i <= 5:
             new_value = response.json()["tracks"]["track"][i]
-            artist=(new_value["artist"]["name"]).replace(" ", "+")
-            track=(new_value["name"].replace(" ", "+"))
-            
+            artist = (new_value["artist"]["name"]).replace(" ", "+")
+            track = (new_value["name"].replace(" ", "+"))
+
             get_image_params = {
-                "method":"track.getInfo",
-                "api_key":API_KEY,
-                "artist":artist,
-                "track":track,
-                "format":"json"
+                "method": "track.getInfo",
+                "api_key": API_KEY,
+                "artist": artist,
+                "track": track,
+                "format": "json"
             }
-            new_image_response = requests.get(BASE_URL, params=get_image_params).json()
+            new_image_response = requests.get(
+                BASE_URL, params=get_image_params).json()
             for key, value in new_image_response.items():
                 # print(value["artist"])
-                # List of title, artist, genre, album image 
-                new_value["image"]=value["album"]["image"]
-            
+                # List of title, artist, genre, album image
+                new_value["image"] = value["album"]["image"]
+
             recs_list.append(
                 SongRecommendation(
                     title=new_value["name"],
@@ -420,9 +425,9 @@ class DummyMusicModelService:
                     image_url=new_value["image"][-1]["#text"]
                 )
             )
-            i+=1
+            i += 1
 
-        return(recs_list)
+        return (recs_list)
 
         # """Always returns the same fixed set of song recommendations."""
         # fixed_recommendations: List[SongRecommendation] = [
