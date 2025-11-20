@@ -1,11 +1,6 @@
 import numpy as np
 import os
 
-# with np.load("sandbox/jonas/cnn_model/blues.00000_win0.npz") as d:
-#     x = d["mel_spec"]
-#     print(x.min(), x.max(), x.mean(), x.std())
-
-
 root = "./data/features/gtzan/train"
 for genre in os.listdir(root):
     gdir = os.path.join(root, genre)
