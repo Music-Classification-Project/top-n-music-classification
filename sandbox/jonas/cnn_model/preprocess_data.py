@@ -5,6 +5,7 @@ import librosa
 import soundfile as sf
 from pathlib import Path
 import random
+import shutil
 
 
 def normalize_audio(audio: np.ndarray) -> np.ndarray:
@@ -40,7 +41,7 @@ def process_file(file_path: str, output_dir: str, config: Dict[str, Any]
     try:
         audio, sr = librosa.load(file_path, sr=config["sample_rate"])
 
-        if config["normalize_per_file"]:
+        if config["normalize_audio"]:
             audio = normalize_audio(audio)
 
         windows = slice_audio(audio, config)
@@ -84,6 +85,8 @@ def preprocess_dataset(raw_dir: str, processed_dir: str, config: Dict[str, Any]
     for split in ["train", "val", "test"]:
         create_dir(os.path.join(processed_dir, split))
 
+    create_dir(os.path.join(processed_dir, "test_unprocessed"))
+
     for genre in genres:
         print(f"Processing genre: {genre}")
 
@@ -118,9 +121,20 @@ def preprocess_dataset(raw_dir: str, processed_dir: str, config: Dict[str, Any]
                                            genre)
             create_dir(genre_proc_path)
 
+            if split_name == "test":
+                unsliced_genre_path = os.path.join(
+                    processed_dir, "test_unprocessed", genre)
+                create_dir(unsliced_genre_path)
+
             for filename in split_files:
                 file_path = os.path.join(genre_raw_path, filename)
                 process_file(file_path, genre_proc_path, config)
+
+                if split_name == "test":
+                    unsliced_dest_path = os.path.join(
+                        unsliced_genre_path, filename
+                    )
+                    shutil.copy2(file_path, unsliced_dest_path)                    
 
         print(f"Finished processing genre: {genre}.")
 
@@ -131,8 +145,8 @@ if __name__ == "__main__":
     CONFIG = {
         "sample_rate": 22050,
         "window_seconds": 5.0,
-        "window_overlap": .25,
-        "normalize_per_file": False,
+        "window_overlap": .50,
+        "normalize_audio": False,
         "random_seed": 42,
         "train_ratio": .7,
         "val_ratio": .1,
@@ -140,5 +154,7 @@ if __name__ == "__main__":
     }
     raw_dir = "./data/raw/gtzan"
     processed_dir = "./data/processed/gtzan"
+
+    print(CONFIG)
 
     preprocess_dataset(raw_dir, processed_dir, CONFIG)
