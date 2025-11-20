@@ -1,3 +1,9 @@
+# Add root directory to Python path for imports
+import sys
+from pathlib import Path
+root_dir = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(root_dir))
+
 from typing import Union, IO, List, TypedDict
 from pathlib import Path
 import tempfile
@@ -88,7 +94,7 @@ class MusicModelService:
 
         # Audio preprocessing config (must match training)
         self.sample_rate: int = 22050
-        self.input_duration_sec: int = 10
+        self.input_duration_sec: int = 5
         self.channels: int = 1
 
         # Feature extraction config (must match training)
@@ -101,7 +107,7 @@ class MusicModelService:
             "use_mfcc": False,
             "use_mel": True,
             "use_chroma": False,
-            "normalize_per_feature": True
+            "normalize_per_feature": False
         }
 
         # Store individual values for API metadata
@@ -455,14 +461,26 @@ class DummyMusicModelService:
 
 
 if __name__ == "__main__":
-    mockModel = DummyMusicModelService("path/to/imaginary/model")
-    if mockModel.loaded:
+    # mockModel = DummyMusicModelService("path/to/imaginary/model")
+    # if mockModel.loaded:
+    #     print("The model has loaded successfully\n\n")
+
+    # print("Results for predict_genres():\n")
+    # print(mockModel.predict_genres("path/to/imaginary/audio/file", 3))
+    # print("\n\n")
+
+    # print("Results for get_recommendations():\n")
+    # print(mockModel.get_recommendations("path/to/imaginary/audio/file", 4))
+    # print("\n")
+
+    Model = MusicModelService("../test_models/M4_82ta_0.68tl.keras")
+    if Model.loaded:
         print("The model has loaded successfully\n\n")
 
     print("Results for predict_genres():\n")
-    print(mockModel.predict_genres("path/to/imaginary/audio/file", 3))
+    print(Model.predict_genres("../GTZAN_Dataset/genres_original/classical/classical.00000.wav", 3))
     print("\n\n")
 
     print("Results for get_recommendations():\n")
-    print(mockModel.get_recommendations("path/to/imaginary/audio/file", 4))
+    print(Model.get_recommendations("../GTZAN_Dataset/genres_original/blues/classical.00000.wav", 4))
     print("\n")
