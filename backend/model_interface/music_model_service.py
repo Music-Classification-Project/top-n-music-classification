@@ -33,7 +33,6 @@ class ModelLoadError(Exception):
 
 # Work in progress (only use Dummy class for now - not functional)
 class MusicModelService:
-    # string path or pathlib.Path object
     def __init__(self, model_path: Union[str, Path]) -> None:
         """Loads the trained model and initializes service metadata.
 
@@ -57,7 +56,6 @@ class MusicModelService:
         except Exception as e:
             raise ModelLoadError(f"Failed to load model at {path}") from e
 
-        # Basic service metadata; adjust as the real model is integrated
         self.model_path: Path = path
         self.loaded: bool = True
         self.version: str = "unknown"
