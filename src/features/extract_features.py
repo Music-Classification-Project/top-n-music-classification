@@ -177,10 +177,12 @@ if __name__ == "__main__":
         "use_mfcc": False,
         "use_mel": True,
         "use_chroma": False,
-        "normalize_per_feature": True
+        "normalize_per_feature": False
     }
 
     input_dir = "./data/processed/gtzan"
     output_dir = "./data/features/gtzan"
+
+    print(CONFIG)
 
     extract_features(input_dir, output_dir, CONFIG)
