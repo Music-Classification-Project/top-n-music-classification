@@ -1,24 +1,18 @@
+from typing import Union, IO, List, TypedDict
+from pathlib import Path
+import tempfile
+import os
+import numpy as np
+import requests
+from flask import jsonify
+
 # Add root directory to Python path for imports
 import sys
 from pathlib import Path
 root_dir = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(root_dir))
+from src.features.extract_features import extract_features_from_file
 
-from typing import Union, IO, List, TypedDict
-from pathlib import Path
-import tempfile
-import os
-import shutil
-import numpy as np
-import requests
-from flask import jsonify
-
-
-# Import preprocessing functions
-from src.preprocess.normalize_data import normalize_audio
-from src.preprocess.extract_features import extract_features_from_file
-
-# Work in progess 
 class SongRecommendation(TypedDict):
     """
     A dictionary representing a single song recommendation.
@@ -46,7 +40,6 @@ class ModelLoadError(Exception):
     pass
 
 
-# Work in progress (only use Dummy class for now - not functional)
 class MusicModelService:
     def __init__(self, model_path: Union[str, Path]) -> None:
         """Loads the trained model and initializes service metadata.
@@ -77,7 +70,7 @@ class MusicModelService:
         self.version: str = "1.0"
         self.dummy_mode: bool = False
 
-        # GTZAN genres in alphabetical order (must matching training)
+        # GTZAN genres in alphabetical order (must match training)
         self.labels: List[str] = [
             "blues",
             "classical", 
@@ -152,7 +145,6 @@ class MusicModelService:
         """
         
         temp_input_file = None
-        temp_output_dir = None
 
         try:
             # Handle file input
@@ -169,22 +161,10 @@ class MusicModelService:
                 temp_input_file.write(audio_data.read())
                 temp_input_file.close()
                 input_file_path = temp_input_file.name
-
-            # Normalize audio
-            temp_output_dir = tempfile.mkdtemp()
-            normalized_path = normalize_audio(
-                input_file_path, 
-                temp_output_dir,
-                sample_rate=self.sample_rate,
-                duration=self.input_duration_sec
-            )
-
-            if normalized_path is None:
-                raise AudioProcessingError("Failed to normalize audio file")
             
             # Extract features
             features = extract_features_from_file(
-                str(normalized_path),
+                input_file_path,
                 self.feature_config
             )
 
@@ -194,7 +174,7 @@ class MusicModelService:
             mel_spec = features["mel_spec"]
 
             # Prepare input for model
-            target_frames = 431
+            target_frames = 215  # 5 seconds * 22050 Hz / 512 hop_length ≈ 215
             current_frames = mel_spec.shape[1]
             
             if current_frames < target_frames:
@@ -206,7 +186,7 @@ class MusicModelService:
                 mel_spec = mel_spec[:, :target_frames, :]
 
             # Add batch dimension
-            mel_spec = np.expand_dims(mel_spec, axis=0)  # (1, 128, 431, 1)
+            mel_spec = np.expand_dims(mel_spec, axis=0)  # (1, 128, 215, 1)
 
             # Run model prediction
             predictions = self.model.predict(mel_spec, verbose=0)
@@ -221,6 +201,9 @@ class MusicModelService:
             # Return top_k results
             top_results = genre_probs[:top_k]
 
+            # Convert numpy float32 to Python float
+            top_results = [(genre, float(prob)) for genre, prob in top_results]
+
             return top_results
         
         except FileNotFoundError:
@@ -234,15 +217,9 @@ class MusicModelService:
                     os.unlink(temp_input_file.name)
                 except Exception:
                     pass
-            
-            if temp_output_dir is not None:
-                try:
-                    shutil.rmtree(temp_output_dir)
-                except Exception:
-                    pass
 
     def get_recommendations(
-        self, audio_data: Union[str, IO[bytes]], num_recommendations: int = 10
+        self, audio_data: Union[str, IO[bytes]], num_recommendations: int = 5
     ) -> list[SongRecommendation]:
         """Generates song recommendations similar to the input audio clip.
 
@@ -284,7 +261,7 @@ class MusicModelService:
         # Parse recommendations
         recs_list = []
         i=1
-        while i <= 5:
+        while i <= num_recommendations:
             new_value = response.json()["tracks"]["track"][i]
             artist=(new_value["artist"]["name"]).replace(" ", "+")
             track=(new_value["name"].replace(" ", "+"))
@@ -346,10 +323,10 @@ class DummyMusicModelService:
         # Audio and feature config matched to extract_features.py and
         # normalize_data.py
         self.sample_rate = 22050  # Hz
-        self.input_duration_sec = 10  # seconds (see normalize_data.DURATION)
-        self.channels = 1  # librosa.load(..., mono=True)
+        self.input_duration_sec = 10
+        self.channels = 1 
 
-        # Feature settings (see extract_features.py CONFIG defaults)
+        # Feature settings
         self.feature_types = ["mel_spec", "mfcc"]
         self.n_mels = 128
         self.n_mfcc = 13
@@ -478,14 +455,14 @@ if __name__ == "__main__":
     # print(mockModel.get_recommendations("path/to/imaginary/audio/file", 4))
     # print("\n")
 
-    Model = MusicModelService("../test_models/M4_82ta_0.68tl.keras")
+    Model = MusicModelService("backend/model_interface/model/M4_82ta_0.68tl.keras")
     if Model.loaded:
         print("The model has loaded successfully\n\n")
 
     print("Results for predict_genres():\n")
-    print(Model.predict_genres("../GTZAN_Dataset/genres_original/classical/classical.00000.wav", 3))
+    print(Model.predict_genres("../GTZAN_Dataset/genres_original/reggae/reggae.00000.wav", 3))
     print("\n\n")
 
     print("Results for get_recommendations():\n")
-    print(Model.get_recommendations("../GTZAN_Dataset/genres_original/blues/classical.00000.wav", 4))
+    print(Model.get_recommendations("../GTZAN_Dataset/genres_original/reggae/reggae.00000.wav", 4))
     print("\n")
