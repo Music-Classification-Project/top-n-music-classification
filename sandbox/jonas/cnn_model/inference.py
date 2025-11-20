@@ -6,6 +6,8 @@ import os
 from keras import keras
 from types import Dict, Any
 import numpy as np
+import librosa
+
 
 class GenrePredictor:
     def __init__(self, model_path: str, config: Dict[str, Any]):
@@ -17,7 +19,7 @@ class GenrePredictor:
         self.model = keras.models.load_model(model_path)
 
         self.genres = sorted([
-            'blues', 'classical', 'country', 'disco', 'hiphop', 
+            'blues', 'classical', 'country', 'disco', 'hiphop',
             'jazz', 'metal', 'pop', 'reggae', 'rock'
         ])
 
@@ -25,11 +27,66 @@ class GenrePredictor:
 
         self.samples_per_window = int(
             self.config["sample_rate"] * self.config["window_seconds"]
-            )
+        )
 
     def _preprocess_audio(self, audio_path: str) -> np.ndarray:
         """Loads audio, slices into windows, and converts to spectrograms."""
-        pass
+
+        # Load audio
+        try:
+            audio, sr = librosa.load(audio_path, sr=self.config["sample_rate"])
+        except Exception as e:
+            print(f"Error loading audio: {e}")
+            return np.array([])
+
+        # Slice into 5-second non-overlapping windows
+        window_samples = self.samples_per_window
+        hop_samples = window_samples
+
+        if len(audio) < window_samples:
+            print(
+                f"Audio file is less than {self.config["window_seconds"]} long"
+            )
+            return np.array([])
+
+        windows = []
+        for start in range(0, len(audio) - window_samples + 1, hop_samples):
+            end = start + window_samples
+            windows.append(audio[start:end])
+
+        # Convert windows into Mel Spectrograms
+        batch_images = []
+        for window in windows:
+            mel_spec = librosa.feature.melspectrogram(
+                y=window,
+                sr=self.config["sample_rate"],
+                n_fft=self.config["n_fft"],
+                hop_length=self.config["hop_length"],
+                n_mels=self.config["n_mels"]
+            )
+
+            # Convert to log scale (dB)
+            mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
+
+            # Ensure exact shape (sometimes rounding errors cause +/- 1 frame)
+            # The model expects (128, 216).
+            # If it's slightly off, we trim or pad.
+            target_width = 216
+            current_width = mel_spec_db.shape[1]
+
+            if current_width < target_width:
+                mel_spec_db = np.pad(
+                    mel_spec_db,
+                    ((0, 0), (0, target_width - current_width))
+                )
+            elif current_width > target_width:
+                mel_spec_db = mel_spec_db[:, :target_width]
+
+            # Add channel dimension (height, width, 1)
+            mel_spec_db = np.expand_dims(mel_spec_db, axis=-1)
+            batch_images.append(mel_spec_db)
+
+        return np.array(batch_images)
 
     def predict(self, audio_path: str) -> Dict:
         """Performs full song prediction."""
