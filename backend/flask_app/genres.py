@@ -2,8 +2,23 @@ import io
 from flask import Blueprint, jsonify, request, current_app
 from werkzeug.exceptions import BadRequest
 
-# blueprint
+# Blueprint
 bp = Blueprint("genres", __name__, url_prefix="/v1/genres")
+
+
+# Healper function to return metadata
+def _feature_meta(service):
+    cfg = getattr(service, "feature_config", {}) or {}
+    return {
+        "feature_types": getattr(service, "feature_types", []),
+        "sample_rate": getattr(service, "sample_rate", cfg.get("sample_rate")),
+        "input_duration_sec": getattr(service, "input_duration_sec", cfg.get("input_duration_sec")),
+        "n_fft": getattr(service, "n_fft", cfg.get("n_fft")),
+        "hop_length": getattr(service, "hop_length", cfg.get("hop_length")),
+        "n_mels": getattr(service, "n_mels", cfg.get("n_mels")),
+        "n_mfcc": getattr(service, "n_mfcc", cfg.get("n_mfcc")),
+        "normalize_per_feature": cfg.get("normalize_per_feature"),
+    }
 
 
 def _parse_int(value, default=None, minimum=None, maximum=None, name="value"):
@@ -43,6 +58,7 @@ def info():
             "data": {
                 "genres": getattr(svc, "labels", []),
                 "model_version": getattr(svc, "version", "unknown"),
+                "features": _feature_meta(svc),
             }
         }),
         200,
@@ -57,13 +73,14 @@ def music():
     - POST: Accept audio file; return top-k genres.
     """
     svc = current_app.config["SERVICE"]
+    max_top_k = getattr(svc, "max_top_k", len(getattr(svc, "labels", [])) or None)
     if request.method == "GET":
         # Parse top_k from query
         top_k = _parse_int(
             request.args.get("top_k"),
             default=5,
             minimum=1,
-            maximum=getattr(svc, "max_top_k", None),
+            maximum=max_top_k,
             name="top_k",
         )
         # Dummy mode: Return mock predictions for UI testing
@@ -84,9 +101,10 @@ def music():
                             "required": False,
                             "default": 5,
                             "min": 1,
-                            "max": getattr(svc, "max_top_k", None),
+                            "max": max_top_k,
                         },
                     },
+                    "features": _feature_meta(svc),
                     "example_curl": "curl -F file=@clip.wav -F top_k=5 http://127.0.0.1:5000/v1/genres/music",
                 }
             ),
@@ -100,7 +118,7 @@ def music():
         request.form.get("top_k", request.args.get("top_k")),
         default=5,
         minimum=1,
-        maximum=getattr(svc, "max_top_k", None),
+        maximum=max_top_k,
         name="top_k",
     )
 
@@ -150,6 +168,7 @@ def recommendations():
                         "file": {"type": "binary", "required": True},
                         "limit": {"type": "integer", "required": False, "default": 5, "min": 1},
                     },
+                    "features": _feature_meta(svc),
                     "example_curl": "curl -F file=@clip.wav -F limit=5 http://127.0.0.1:5000/v1/genres/recommendations",
                 }
             ),

@@ -7,16 +7,21 @@ from flask_cors import CORS
 # Import the service layer
 try:
     # If package import path works
-    from model_interface.music_model_service import (
+    from backend.model_interface.music_model_service import (
         MusicModelService,
         DummyMusicModelService,
     )
-except Exception:  # pragma: no cover - fallback if import path differs during dev
-    # Fallback relative import if running directly
+except Exception:  # fallback if import path differs during dev
     from ..music_model_service import (  # type: ignore
         MusicModelService,
         DummyMusicModelService,
     )
+
+
+# Default model aligned with extract_features.py config (mel spectrograms)
+DEFAULT_MODEL_PATH = os.path.join(
+    os.getcwd(), "backend", "model_interface", "model", "M4_82ta_0.68tl.keras"
+)
 
 
 def _register_error_handlers(app: Flask) -> None:
@@ -207,6 +212,7 @@ def _build_openapi(app: Flask) -> Dict[str, Any]:
             "input_duration_sec": getattr(service, "input_duration_sec", None),
             "channels": getattr(service, "channels", None),
             "feature_types": getattr(service, "feature_types", None),
+            "feature_config": getattr(service, "feature_config", None),
             "n_mels": getattr(service, "n_mels", None),
             "n_mfcc": getattr(service, "n_mfcc", None),
             "n_fft": getattr(service, "n_fft", None),
@@ -216,6 +222,19 @@ def _build_openapi(app: Flask) -> Dict[str, Any]:
         },
         "components": {
             "schemas": {
+                "FeatureMeta": {
+                    "type": "object",
+                    "properties": {
+                        "feature_types": {"type": "array", "items": {"type": "string"}},
+                        "sample_rate": {"type": "integer"},
+                        "input_duration_sec": {"type": "integer"},
+                        "n_fft": {"type": "integer"},
+                        "hop_length": {"type": "integer"},
+                        "n_mels": {"type": "integer"},
+                        "n_mfcc": {"type": "integer"},
+                        "normalize_per_feature": {"type": "boolean"},
+                    },
+                },
                 "Error": {
                     "type": "object",
                     "properties": {
@@ -269,6 +288,7 @@ def _build_openapi(app: Flask) -> Dict[str, Any]:
                             "properties": {
                                 "genres": {"type": "array", "items": {"type": "string"}},
                                 "model_version": {"type": "string"},
+                                "features": {"$ref": "#/components/schemas/FeatureMeta"},
                             },
                             "required": ["genres", "model_version"],
                         }
@@ -289,6 +309,7 @@ def _build_openapi(app: Flask) -> Dict[str, Any]:
                         "input_duration_sec": {"type": "integer"},
                         "channels": {"type": "integer"},
                         "feature_types": {"type": "array", "items": {"type": "string"}},
+                        "feature_config": {"type": "object"},
                         "n_mels": {"type": "integer"},
                         "n_mfcc": {"type": "integer"},
                         "n_fft": {"type": "integer"},
@@ -321,8 +342,8 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY=os.environ.get("SECRET_KEY", "dev"),
         MAX_CONTENT_LENGTH=int(os.environ.get("MAX_CONTENT_LENGTH", 32 * 1024 * 1024)),  # 32MB
-        MODEL_PATH=os.environ.get("MODEL_PATH", os.path.join(os.getcwd(), "src", "preprocess", "best_model.keras")),
-        USE_DUMMY_SERVICE=os.environ.get("USE_DUMMY_SERVICE", "true").lower() in {"1", "true", "yes"},
+        MODEL_PATH=os.environ.get("MODEL_PATH", DEFAULT_MODEL_PATH),
+        USE_DUMMY_SERVICE=os.environ.get("USE_DUMMY_SERVICE", "false").lower() in {"1", "true", "yes"},
     )
 
     if test_config is not None:
@@ -371,6 +392,7 @@ def create_app(test_config=None):
                     "input_duration_sec": getattr(svc, "input_duration_sec", None),
                     "channels": getattr(svc, "channels", None),
                     "feature_types": getattr(svc, "feature_types", None),
+                    "feature_config": getattr(svc, "feature_config", None),
                     "n_mels": getattr(svc, "n_mels", None),
                     "n_mfcc": getattr(svc, "n_mfcc", None),
                     "n_fft": getattr(svc, "n_fft", None),
@@ -427,8 +449,9 @@ def create_app(test_config=None):
 
     return app
 
-# Testing Only 
-"""test_app = Flask(__name__)
+# Testing Only
+""" 
+test_app = Flask(__name__)
 CORS(test_app)
 @test_app.route('/test', methods=['GET'])
 def test_endpoint():
@@ -436,4 +459,5 @@ def test_endpoint():
 
 if __name__ == '__main__' and os.getenv == 'development':
     test_app.run(debug=True)
+
 """
