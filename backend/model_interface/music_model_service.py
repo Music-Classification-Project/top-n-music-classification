@@ -4,14 +4,9 @@ import tempfile
 import os
 import numpy as np
 import requests
+import librosa
 from flask import jsonify
 
-# Add root directory to Python path for imports
-import sys
-from pathlib import Path
-root_dir = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(root_dir))
-from src.features.extract_features import extract_features_from_file
 
 class SongRecommendation(TypedDict):
     """
@@ -26,7 +21,6 @@ class SongRecommendation(TypedDict):
     title: str
     artist: str
     genre: str
-    # similarity_score: float
     image_url: str
 
 
@@ -93,6 +87,8 @@ class MusicModelService:
         # Feature extraction config (must match training)
         self.feature_config = {
             "sample_rate": 22050,
+            "window_seconds": 5,
+            "normalize_audio": False,
             "n_fft": 2048,
             "hop_length": 512,
             "n_mels": 128,
@@ -102,6 +98,10 @@ class MusicModelService:
             "use_chroma": False,
             "normalize_per_feature": False
         }
+
+        self.samples_per_window = int(
+            self.feature_config["sample_rate"] * self.feature_config["window_seconds"]
+        )
 
         # Store individual values for API metadata
         self.n_mels: int = 128
@@ -122,6 +122,66 @@ class MusicModelService:
         import tensorflow as tf
         model = tf.keras.models.load_model(path)
         return model
+    
+    def _preprocess_audio(self, audio_path: str) -> np.ndarray:
+        """Loads audio, slices into windows, and converts to spectrograms."""
+
+        # Load audio
+        try:
+            audio, sr = librosa.load(audio_path, sr=self.feature_config["sample_rate"])
+        except Exception as e:
+            print(f"Error loading audio: {e}")
+            return np.array([])
+
+        # Slice into 5-second non-overlapping windows
+        window_samples = self.samples_per_window
+        hop_samples = window_samples
+
+        if len(audio) < window_samples:
+            window_seconds = self.feature_config["window_seconds"]
+            print(
+                f"Audio file is less than {window_seconds} long"
+            )
+            return np.array([])
+
+        windows = []
+        for start in range(0, len(audio) - window_samples + 1, hop_samples):
+            end = start + window_samples
+            windows.append(audio[start:end])
+
+        # Convert windows into Mel Spectrograms
+        batch_images = []
+        for window in windows:
+            mel_spec = librosa.feature.melspectrogram(
+                y=window,
+                sr=self.feature_config["sample_rate"],
+                n_fft=self.feature_config["n_fft"],
+                hop_length=self.feature_config["hop_length"],
+                n_mels=self.feature_config["n_mels"]
+            )
+
+            # Convert to log scale (dB)
+            mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
+
+            # Ensure exact shape (sometimes rounding errors cause +/- 1 frame)
+            # The model expects (128, 216).
+            # If it's slightly off, we trim or pad.
+            target_width = 216
+            current_width = mel_spec_db.shape[1]
+
+            if current_width < target_width:
+                mel_spec_db = np.pad(
+                    mel_spec_db,
+                    ((0, 0), (0, target_width - current_width))
+                )
+            elif current_width > target_width:
+                mel_spec_db = mel_spec_db[:, :target_width]
+
+            # Add channel dimension (height, width, 1)
+            mel_spec_db = np.expand_dims(mel_spec_db, axis=-1)
+            batch_images.append(mel_spec_db)
+
+        return np.array(batch_images)
 
     def predict_genres(
         self, audio_data: Union[str, IO[bytes]], top_k: int = 5
@@ -150,9 +210,9 @@ class MusicModelService:
             # Handle file input
             if isinstance(audio_data, str):
                 # File path
-                input_file_path = audio_data
-                if not Path(input_file_path).exists():
-                    raise FileNotFoundError(f"Audio file not found: {input_file_path}")
+                audio_file_path = audio_data
+                if not Path(audio_file_path).exists():
+                    raise FileNotFoundError(f"Audio file not found: {audio_file_path}")
             else: 
                 # File stream
                 temp_input_file = tempfile.NamedTemporaryFile(
@@ -160,42 +220,21 @@ class MusicModelService:
                 )
                 temp_input_file.write(audio_data.read())
                 temp_input_file.close()
-                input_file_path = temp_input_file.name
+                audio_file_path = temp_input_file.name
             
-            # Extract features
-            features = extract_features_from_file(
-                input_file_path,
-                self.feature_config
-            )
 
-            if "mel_spec" not in features:
-                raise AudioProcessingError("Failed to extract mel spectrogram")
+            X = self._preprocess_audio(audio_file_path)
+
+            if len(X) == 0:
+                raise AudioProcessingError("Error preprocessing audio")
             
-            mel_spec = features["mel_spec"]
+            predictions = self.model.predict(X, verbose=0)
 
-            # Prepare input for model
-            target_frames = 215  # 5 seconds * 22050 Hz / 512 hop_length ≈ 215
-            current_frames = mel_spec.shape[1]
-            
-            if current_frames < target_frames:
-                # Pad with zeros if too short
-                padding = target_frames - current_frames
-                mel_spec = np.pad(mel_spec, ((0, 0), (0, padding), (0, 0)), mode='constant')
-            elif current_frames > target_frames:
-                # Trim if too long
-                mel_spec = mel_spec[:, :target_frames, :]
-
-            # Add batch dimension
-            mel_spec = np.expand_dims(mel_spec, axis=0)  # (1, 128, 215, 1)
-
-            # Run model prediction
-            predictions = self.model.predict(mel_spec, verbose=0)
-
-            # predictions shape: (1, num_classes)
-            probabilities = predictions[0]
+            # Average probabilities across all windows (Soft Voting)
+            avg_probabilities = np.mean(predictions, axis=0)
 
             # Pair genres with probabilities and sort
-            genre_probs = list(zip(self.labels, probabilities))
+            genre_probs = list(zip(self.labels, avg_probabilities))
             genre_probs.sort(key=lambda x: x[1], reverse=True)
 
             # Return top_k results
@@ -227,7 +266,7 @@ class MusicModelService:
             audio_data (Union[str, IO[bytes]]): Path to the input audio file
                 or a file-like object containing the audio data.
             num_recommendations (int, optional): The number of recommendations
-                to generate. Defaults to 10.
+                to generate. Defaults to 5.
 
         Returns:
             list[SongRecommendation]: A list of recommended songs.
@@ -406,63 +445,15 @@ class DummyMusicModelService:
 
         return (recs_list)
 
-        # """Always returns the same fixed set of song recommendations."""
-        # fixed_recommendations: List[SongRecommendation] = [
-        #     SongRecommendation(
-        #         title="Black Hole Sun",
-        #         artist="Soundgarden",
-        #         genre="rock",
-        #         similarity_score=0.95,
-        #     ),
-        #     SongRecommendation(
-        #         title="Man In The Box",
-        #         artist="Alice In Chains",
-        #         genre="rock",
-        #         similarity_score=0.91,
-        #     ),
-        #     SongRecommendation(
-        #         title="Lithium",
-        #         artist="Nirvana",
-        #         genre="rock",
-        #         similarity_score=0.89,
-        #     ),
-        #     SongRecommendation(
-        #         title="Even Flow",
-        #         artist="Perl Jam",
-        #         genre="rock",
-        #         similarity_score=0.87,
-        #     ),
-        #     SongRecommendation(
-        #         title="Would?",
-        #         artist="Alice In Chains",
-        #         genre="rock",
-        #         similarity_score=0.85,
-        #     ),
-        # ]
-        # return fixed_recommendations[:num_recommendations]
-
-
 if __name__ == "__main__":
-    # mockModel = DummyMusicModelService("path/to/imaginary/model")
-    # if mockModel.loaded:
-    #     print("The model has loaded successfully\n\n")
-
-    # print("Results for predict_genres():\n")
-    # print(mockModel.predict_genres("path/to/imaginary/audio/file", 3))
-    # print("\n\n")
-
-    # print("Results for get_recommendations():\n")
-    # print(mockModel.get_recommendations("path/to/imaginary/audio/file", 4))
-    # print("\n")
-
     Model = MusicModelService("backend/model_interface/model/M4_82ta_0.68tl.keras")
     if Model.loaded:
         print("The model has loaded successfully\n\n")
 
     print("Results for predict_genres():\n")
-    print(Model.predict_genres("../allthat.mp3", 3))
+    print(Model.predict_genres("data/raw/Data/genres_original/metal/metal.00000.wav", 3))
     print("\n\n")
 
     print("Results for get_recommendations():\n")
-    print(Model.get_recommendations("../allthat.mp3", 4))
+    print(Model.get_recommendations("data/raw/Data/genres_original/metal/metal.00000.wav", 4))
     print("\n")
