@@ -460,9 +460,9 @@ if __name__ == "__main__":
         print("The model has loaded successfully\n\n")
 
     print("Results for predict_genres():\n")
-    print(Model.predict_genres("../GTZAN_Dataset/genres_original/reggae/reggae.00000.wav", 3))
+    print(Model.predict_genres("../allthat.mp3", 3))
     print("\n\n")
 
     print("Results for get_recommendations():\n")
-    print(Model.get_recommendations("../GTZAN_Dataset/genres_original/reggae/reggae.00000.wav", 4))
+    print(Model.get_recommendations("../allthat.mp3", 4))
     print("\n")
