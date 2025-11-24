@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import upload from "../assets/cloud-upload.svg";
-import { useNavigate } from 'react-router-dom';
+import { createSearchParams, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 function UploadElement(){
     /*
@@ -10,9 +11,9 @@ function UploadElement(){
     */
    // SET file
     const [selectedFile, setSelectedFile] = useState(null);
-    const [data, setData] = useState(null)
     const apiUrl = "http://localhost:5000"
-    const navigate = useNavigate();
+    let navigate = useNavigate();
+    const formData = new FormData();
             
 
     // Set selected file when user chooses a file
@@ -20,25 +21,26 @@ function UploadElement(){
         setSelectedFile(event.target.files[0])
     }
 
+
+    async function fetchData() {
+        try {
+            let response = await fetch(`${apiUrl}/v1/genres/music`, 
+                {method: "POST", body: formData});
+            const body = await response.text()
+            console.log(body);
+            navigate("/results/"+ body)
+            }
+        catch (error) {
+            console.error("Error fetching data from endpoint:", error);
+        }
+    }
     // Saves the file as a Formdata object 
     const onFileUpload = () => {
-        const formData = new FormData();
         formData.append("file", selectedFile)
         formData.append("top_k", "5")
         console.log(selectedFile);
-        try {
-            fetch(`${apiUrl}/v1/genres/music`, 
-                {method: "POST", body: formData})
-            .then((res) => res.text())
-            .then((text) => {
-                setData(text);
-                navigate('/results', {data});
-            });
-
-        }
-        catch (error) {
-            console.error("Error fetching data from endpoint:", error);
-        }}; 
+        fetchData()
+        }; 
     
 
     // IF file is selected return file details. Else, prompt the user to select a file.
@@ -72,7 +74,7 @@ function UploadElement(){
                     <div class="">
                         {fileData()}
                     </div>
-                    <button 
+                    <button
                         class="text-white bg-midgreen rounded-sm hover:bg-success-strong focus:ring-4 focus:success-subtle shadow-xs text-small  w-full py-1.5 my-2 focus:outline-none"
                         onClick={onFileUpload}>
                         UPLOAD FILE

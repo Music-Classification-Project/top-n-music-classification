@@ -1,27 +1,24 @@
 @import "tailwindcss";
-@layer theme, base, components, utilities;
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/preflight.css" layer(base);
-@import "tailwindcss/utilities.css" layer(utilities);
 
-
-html, body, :root { 
-  height: 100vh;   
-  width: 100vw; 
-  margin: 10px; 
-  padding: 10px;
-}
 
 @theme {
   --font-logo: "DM", sans-serif; 
-  --color-darkestgreen: #485C11;
-  --color-midgreen: #8E9C78;
-  --color-lightgreen: #DFECC6;
-  --color-lightgrey: #7B7E86;
+  --color-darkestgreen: #485c11 ;
+  --color-midgreen: #8e9c78 ;
+  --color-coolgreen: #9c9278 ;
+  --color-lightgreen: #dfecc6 ;
+  --color-lightgrey: #7b7e86;
   --color-grey: #454545;
+  --color-bggreen: #b4d4a3b8;
+  --color-lightergrey: #929292 ;
+  --color-anothergrey: #6f6f6f ;
+  --color-customgrey: #e9e9e9 ;
+  --color-orange-bright: #ffa500 ;
   --tracking-1: 0.06em;
 
 }
 
-
-
+html, body, :root { 
+  height: 100vh;   
+  width: 100vw;  
+}
