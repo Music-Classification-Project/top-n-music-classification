@@ -1,45 +1,24 @@
 @import "tailwindcss";
 
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
 
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+
+@theme {
+  --font-logo: "DM", sans-serif; 
+  --color-darkestgreen: #485c11;
+  --color-midgreen: #8E9C78;
+  --color-coolgreen: #9C9278;
+  --color-lightgreen: #DFECC6;
+  --color-lightgrey: #7B7E86;
+  --color-grey: #454545;
+  --color-lightergrey: #929292;
+  --color-anothergrey: #6F6F6F;
+  --color-customgrey: #E9E9E9;
+  --tracking-1: 0.06em;
+
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+html, body, :root { 
+  height: 100vh;   
+  width: 100vw;  
 }
