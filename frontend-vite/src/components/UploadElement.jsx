@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import upload from "../assets/cloud-upload.svg";
-import { createSearchParams, useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { data, useNavigate } from 'react-router-dom';
+import axios from 'axios'
+
 
 function UploadElement(){
     /*
@@ -10,38 +11,40 @@ function UploadElement(){
     Data received is then displayed below the file upload form.
     */
    // SET file
-    const [selectedFile, setSelectedFile] = useState(null);
-    const apiUrl = "http://localhost:5000"
+    const [selectedFile, setSelectedFile] = useState();
     let navigate = useNavigate();
-    const formData = new FormData();
-            
-
-    // Set selected file when user chooses a file
-    const onFileChange = (event) => {
+    function handleChange(event) {
         setSelectedFile(event.target.files[0])
     }
+  
 
-
-    async function fetchData() {
-        try {
-            let response = await fetch(`${apiUrl}/v1/genres/music`, 
-                {method: "POST", body: formData});
-            const body = await response.text()
-            console.log(body);
-            navigate("/results/"+ body)
+    // Saves the file as a formdata object and submits the data to v1/genres/music 
+    function handleSubmit(event){
+        event.preventDefault()
+        const url =  `http://localhost:5000/v1/genres/music`;
+        const formData = new FormData();
+        
+        // Add File Data
+        formData.append('file', selectedFile);
+        const config = {
+            headers: {
+                'content-type': 'multipart/form-data',},
             }
-        catch (error) {
-            console.error("Error fetching data from endpoint:", error);
-        }
-    }
-    // Saves the file as a Formdata object 
-    const onFileUpload = () => {
-        formData.append("file", selectedFile)
-        formData.append("top_k", "5")
-        console.log(selectedFile);
-        fetchData()
+
+        // SEND file to GET genre predictions
+        axios.post(url, formData, config)
+        .catch(function(error){
+            console.log(error.toJson())
+        })
+        .then((response) => {
+            console.log('RECEIVED FROM v1/genres/music: ', response.data)
+            const jsonResponse = JSON.stringify(response.data)
+            console.log("UPLOAD FORM: data to be sent", jsonResponse)
+            // Navigate to results page
+            navigate(`/results/${jsonResponse}`)
+            });
         }; 
-    
+
 
     // IF file is selected return file details. Else, prompt the user to select a file.
     const fileData = () => {
@@ -58,30 +61,34 @@ function UploadElement(){
             );
         };
     };
-        return (
-        <fieldset>
-            <label>
-                <div class="border-1 border-dashed border-lightgreen align-center my-4 grid grid-cols-1 justify-items-center">
-                    <div>
-                        <div class="font-[DM Sans] font-bold text-gray-800">Upload</div>
-                    </div>
-                    <img src={upload} class="object-scale-down h-40 w-90" alt="upload icon" />
-                        <input type="file" id="doc" name="doc" onChange = {onFileChange} hidden/>
-                    <div>Drag & drop files</div>
-                </div>
 
-                <div class="py-4">
-                    <div class="">
-                        {fileData()}
+
+        return (
+
+            // Upload Form
+            <form onSubmit={handleSubmit}>
+                <fieldset>
+                    <label>
+                        <div class="border-1 border-dashed border-lightgreen align-center my-4 grid grid-cols-1 justify-items-center">
+                             <div class="font-[DM Sans] font-bold text-gray-800">Upload</div>
+                            <img src={upload} class="object-scale-down h-40 w-90" alt="upload icon" />
+                            <input type="file" id="doc" name="doc" onChange = { handleChange } hidden/>
+                        <div>Drag & drop files</div>
+                        </div>
+                    </label>
+
+                    <div class="py-4">
+                            {fileData()}
+                        <button
+                            class="text-white bg-midgreen rounded-sm hover:bg-success-strong focus:ring-4 focus:success-subtle shadow-xs text-small  w-full py-1.5 my-2 focus:outline-none"
+                            type = "submit">
+                            UPLOAD FILE
+                        </button>
                     </div>
-                    <button
-                        class="text-white bg-midgreen rounded-sm hover:bg-success-strong focus:ring-4 focus:success-subtle shadow-xs text-small  w-full py-1.5 my-2 focus:outline-none"
-                        onClick={onFileUpload}>
-                        UPLOAD FILE
-                    </button>
-                </div>
-            </label>
-        </fieldset>
+
+                </fieldset>
+            </form>
+            
     )
 }
 

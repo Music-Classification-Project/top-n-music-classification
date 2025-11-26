@@ -14,11 +14,22 @@
   --color-anothergrey: #6f6f6f ;
   --color-customgrey: #e9e9e9 ;
   --color-orange-bright: #ffa500 ;
+
+  --color-bar-darkest: #758467 ;
+  --color-bar-dark: #819171;
+  --color-bar-mid: #9CAF88;
+  --color-bar-green: #CBD5C0;
+  --color-bar-light: #DFE6DA;
   --tracking-1: 0.06em;
 
 }
 
-html, body, :root { 
+html, body{ 
   height: 100vh;   
   width: 100vw;  
+}
+
+:root{
+  height: 100%;
+  width: 100vw;
 }

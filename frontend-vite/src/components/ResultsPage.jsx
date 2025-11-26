@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import NavBar from "./NavBar";
-import TextCard from "./TextCard"
+import GenreCard from "./GenreCard";
 import { useParams } from "react-router-dom";
-import RadialChart from "./RadialChart";
 
 
 /** 
@@ -12,51 +11,26 @@ import RadialChart from "./RadialChart";
  */
 
 export default function ResultsPage() {
+    // Grab passed parameters & convert to JSON.
     const params = useParams();
     const parameters = params.predictions;
+   
+    console.log(`RESULTS PAGE: Data received fron upload form: ${parameters}`)
+    // Parse Predictions
     const predictionsJSON = JSON.parse(parameters)
     let predictions = predictionsJSON.predictions
-    console.log(predictions)
 
-    let chartData = predictions.map(item => {
-        {
-        name: item.genre
-        x: item.confidence
-        fill: '#ffa658'
-        }
-    })
-
-    console.log(chartData)
-
-    
-   
-     // Sample data
-    const data = [
-        { name: 'A', x: 1, fill: "green" },
-        { name: 'B', x: 2, fill: "yellow" },
-        { name: 'C', x: 3, fill: "aqua" },
-        { name: 'D', x: 4, fill: "blue" },
-        { name: 'E', x: 5, fill: "orange" },
-        { name: 'F', x: 6, fill: "red" },
-        { name: 'G', x: 7, fill: "black" },
-        { name: 'H', x: 8, fill: "purple" },
-        { name: 'I', x: 9, fill: "gray" },
-    ];
-
-    console.log(data)
-
+    // Display predictions via genrecards
     return(
         <>
         <NavBar />
-        <div class="flex flex-row w-.1 my-5 stick self-center">
-            <div class="flex object-contain flex-col w-1/2 px-5 flex-auto h-fit">
+        <div class="flex flex-row overflow-hidden h-80% m-15">
+            <div class="flex flex-col w-1/2">
                 <p class = "font-[DM Sans] text-left text-black/75 text-[60px]/20 tracking-tight">Predictions</p>
-                <TextCard predictions={predictions.predictions}/>
+                <GenreCard predictions={predictions.predictions}/>
             </div>
-            <div class="flex object-contain flex-col w-1/2 px-5 flex-auto h-fit">
-                <RadialChart predictions={predictions.predictions}/>
-                <p class = "font-[DM Sans] text-left text-black/75 text-[60px]/20 tracking-tight">Data</p>
-            
+            <div class="relative flex flex-col justify-end w-1/2 flex-auto">
+                <p class = "absolute font-[DM Sans] right-0 bottom-0 text-black/75 text-[60px]/20 tracking-tight">Similar Music</p>
             </div>
          </div>
         </>
