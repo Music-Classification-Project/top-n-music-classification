@@ -21,7 +21,7 @@ function UploadElement(){
     // Saves the file as a formdata object and submits the data to v1/genres/music 
     function handleSubmit(event){
         event.preventDefault()
-        const url =  `http://localhost:5000/v1/genres/music`;
+        const url =  `http://localhost:5000`;
         const formData = new FormData();
         
         // Add File Data
@@ -30,21 +30,23 @@ function UploadElement(){
             headers: {
                 'content-type': 'multipart/form-data',},
             }
-
-        // SEND file to GET genre predictions
-        axios.post(url, formData, config)
+        /* 
+        SEND POST requests to /v1/genres/.. to receive: 
+         1. Recommendations
+         2. Genres
+          */
+        axios.all([
+            axios.post(`${url}/v1/genres/recommendations`, formData),
+            axios.post(`${url}/v1/genres/music`, formData)
+        ])
+        .then(axios.spread((recommendations, predictions) =>{
+            console.log('Genres received: ', predictions.data, 'Recommendations received: ', recommendations.data)
+            navigate(`/results/${JSON.stringify(predictions.data)}/${JSON.stringify(recommendations.data)}`)
+        }))
         .catch(function(error){
-            console.log(error.toJson())
-        })
-        .then((response) => {
-            console.log('RECEIVED FROM v1/genres/music: ', response.data)
-            const jsonResponse = JSON.stringify(response.data)
-            console.log("UPLOAD FORM: data to be sent", jsonResponse)
-            // Navigate to results page
-            navigate(`/results/${jsonResponse}`)
-            });
+            console.log(error)
+        });
         }; 
-
 
     // IF file is selected return file details. Else, prompt the user to select a file.
     const fileData = () => {
@@ -61,10 +63,7 @@ function UploadElement(){
             );
         };
     };
-
-
         return (
-
             // Upload Form
             <form onSubmit={handleSubmit}>
                 <fieldset>

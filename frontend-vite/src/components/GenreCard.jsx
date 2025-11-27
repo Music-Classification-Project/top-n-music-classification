@@ -11,8 +11,10 @@ export default function GenreCard(){
     const params = useParams()
     let predictionList = JSON.parse(params.predictions)
     predictionList = predictionList['predictions']
+
+
     predictionList.sort((a, b) => b.confidence - a.confidence);
-    console.log('List of predictions sent to genre card: ', predictionList)
+    console.log('List of predictions that was sent to  the genre card: ', predictionList)
     const colors = [
          'bg-bar-darkest', 
          'bg-bar-dark', 
@@ -21,8 +23,9 @@ export default function GenreCard(){
          'bg-bar-light'
     ]
 
+     console.log(predictionList)
     return(
-    <div class="flex flex-col border-r w-full overflow-hidden">
+    <div class="flex flex-col border-r size-9/10">
         {predictionList.map((prediction, index) => 
             <CardValue genre={prediction.genre} confidence={prediction.confidence} index={index} color={colors[index]} />
         )}
@@ -35,12 +38,12 @@ function CardValue({genre, confidence, index, color}) {
     let modifiedGenre = genre.charAt(0).toUpperCase() + genre.slice(1)
 
     return(
-            <div key={index} class="flex flex-row items-center justify-between h-30 w-9/10 border-b-1 border-customgrey">
-                <div class="-tracking-1 font-[DM Sans] text-coolgreen/50 text-[80px]">
+            <div key={index} class="flex flex-row items-center justify-between w-9/10 border-b-1 border-customgrey ">
+                <div class="font-[DM Sans] text-anothergrey/50 text-left text-[60px]">
                     0{index+1}
                 </div>
                 <div>
-                    <div class ="font-[crimson] font-bold text-darkgrey text-[20px]">
+                    <div class ="font-[crimson] text-darkgrey text-[20px]">
                         {modifiedGenre}
                     </div>
                     <div class ="font-[DM Sans] text-grey">
