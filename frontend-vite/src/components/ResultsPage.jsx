@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import NavBar from "./NavBar";
-import TextCard from "./TextCard"
+import GenreCard from "./GenreCard";
 import { useParams } from "react-router-dom";
-import RadialChart from "./RadialChart";
+import RecommendationCard from "./RecommendationCard";
 
 
 /** 
@@ -12,53 +12,30 @@ import RadialChart from "./RadialChart";
  */
 
 export default function ResultsPage() {
+    // Grab passed parameters & convert to JSON.
     const params = useParams();
-    const parameters = params.predictions;
-    const predictionsJSON = JSON.parse(parameters)
-    let predictions = predictionsJSON.predictions
-    console.log(predictions)
+    const predictions = params.predictions;
+    const recommendations = params.recommendations;
+    console.log(`RESULTS PAGE: Data received fron upload form: ${predictions, recommendations}`)
 
-    let chartData = predictions.map(item => {
-        {
-        name: item.genre
-        x: item.confidence
-        fill: '#ffa658'
-        }
-    })
-
-    console.log(chartData)
-
-    
-   
-     // Sample data
-    const data = [
-        { name: 'A', x: 1, fill: "green" },
-        { name: 'B', x: 2, fill: "yellow" },
-        { name: 'C', x: 3, fill: "aqua" },
-        { name: 'D', x: 4, fill: "blue" },
-        { name: 'E', x: 5, fill: "orange" },
-        { name: 'F', x: 6, fill: "red" },
-        { name: 'G', x: 7, fill: "black" },
-        { name: 'H', x: 8, fill: "purple" },
-        { name: 'I', x: 9, fill: "gray" },
-    ];
-
-    console.log(data)
-
+    // Display predictions and recommendations
     return(
         <>
-        <NavBar />
-        <div class="flex flex-row w-.1 my-5 stick self-center">
-            <div class="flex object-contain flex-col w-1/2 px-5 flex-auto h-fit">
-                <p class = "font-[DM Sans] text-left text-black/75 text-[60px]/20 tracking-tight">Predictions</p>
-                <TextCard predictions={predictions.predictions}/>
-            </div>
-            <div class="flex object-contain flex-col w-1/2 px-5 flex-auto h-fit">
-                <RadialChart predictions={predictions.predictions}/>
-                <p class = "font-[DM Sans] text-left text-black/75 text-[60px]/20 tracking-tight">Data</p>
-            
-            </div>
-         </div>
+            <NavBar />
+            <div class="flex m-10 flex-row justify-center align-center h-full w-full -z-40 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
+                <div class="flex self-center align-center w-full justify-center -z-5 inset-0 rounded-full bg-[#8E9C78]/20 size-60/100">
+                    <div class="flex flex-col mx-10 w-full">
+                        <h1 class = "flex-auto -tracking-1 leading-18 font-[DM Sans] text-black text-[60px] tracking-tight">Predictions</h1>
+                        <GenreCard predictions={predictions}/>
+                    </div>
+                </div>
+                <div class="flex self-center align-center justify-center w-full ">
+                    <div class="flex flex-col m-10 w-full relative ">
+                        <RecommendationCard recommendations={recommendations.recommendations} />
+                        <p class = "absolute font-[DM Sans] right-5 bottom-0 text-black text-[60px]/20 tracking-tight">Similar Music</p>
+                    </div>
+                </div>
+             </div>
         </>
     )
 }

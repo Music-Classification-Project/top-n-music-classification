@@ -10,7 +10,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route index element = {<HomePage />}/>
-        <Route path="/results/:predictions" element={<ResultsPage />} />
+        <Route path="/results/:predictions/:recommendations" element={<ResultsPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -7,7 +7,7 @@
   --font-logo: "DM", sans-serif; 
   --color-darkestgreen: #485c11;
   --color-midgreen: #8E9C78;
-  --color-coolgreen: #9C9278;
+  --color-coolgreen: #9C9278; 
   --color-lightgreen: #DFECC6;
   --color-lightgrey: #7B7E86;
   --color-grey: #454545;
@@ -15,10 +15,23 @@
   --color-anothergrey: #6F6F6F;
   --color-customgrey: #E9E9E9;
   --tracking-1: 0.06em;
+  --color-darkest-blue: #1c3464 ;
+  --color-dark-blue: #034569;
+  --color-mid-blue: #034569;
+  --color-blue-blue: #034569;
+  --color-dark-blue: #034569;
+  --color-box-fill: #8E9C78;
+  --color-rec-text: #667056;
+  --tracking-1: 0.06em;
 
 }
 
-html, body, :root { 
+html, body  { 
   height: 100vh;   
   width: 100vw;  
+}
+
+#root{
+  height: 100vh;
+  width: 100vw;
 }
