@@ -25,7 +25,7 @@ export default function GenreCard(){
 
      console.log(predictionList)
     return(
-    <div class="flex flex-col border-r size-9/10">
+    <div class="flex flex-col border-b border-r-3 border-double  p-3 size-9/10">
         {predictionList.map((prediction, index) => 
             <CardValue genre={prediction.genre} confidence={prediction.confidence} index={index} color={colors[index]} />
         )}
@@ -38,7 +38,7 @@ function CardValue({genre, confidence, index, color}) {
     let modifiedGenre = genre.charAt(0).toUpperCase() + genre.slice(1)
 
     return(
-            <div key={index} class="flex flex-row items-center justify-between w-9/10 border-b-1 border-customgrey ">
+            <div key={index} class="flex flex-row items-center justify-between overflow-hidden w-9/10 border-b-1 border-customgrey ">
                 <div class="font-[DM Sans] text-anothergrey/50 text-left text-[60px]">
                     0{index+1}
                 </div>
@@ -51,7 +51,7 @@ function CardValue({genre, confidence, index, color}) {
                     </div>
                 </div>
 
-                <div class="self-right w-2/3 rounded-r-full h-8">
+                <div class="self-right w-2/3 rounded-r-full  h-8">
                     <div class={`${color} h-full rounded-r-full`} 
                     style={{width: modifiedConfidence*3}}></div>
                 </div>

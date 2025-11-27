@@ -25,7 +25,7 @@ export default function ReccomendationCard(){
 function RecommendationValue({artist, title, index}){
     return(
        <div key={index} class="text-nowrap p-2">
-                <div class=" font-[DM Sans] tracking-tighter text-rec-text/65 text-[36px]">
+                <div class=" font-[DM Sans] tracking-tighter text-rec-text/65 text-[32px]">
                     Song {index+1}
                 </div>
                 <div class ="font-[DM Sans] text-anothergrey text-[15px]">
