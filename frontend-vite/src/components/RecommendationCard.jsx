@@ -16,7 +16,7 @@ export default function ReccomendationCard(){
 
     
         return(
-        <div class="flex flex-col size-9/10 border border-bg-darkgreen/20 justify-center start-bottom m-5 bg-box-fill/5 p-10">
+        <div class="flex flex-col border border-bg-darkgreen/20 justify-center m-7 bg-box-fill/5 p-10">
             {recommendationList.map((recommendation, index) => 
                 <RecommendationValue artist={recommendation.artist} title={recommendation.title} index={index} />
             )}
@@ -29,7 +29,7 @@ function RecommendationValue({artist, title, index}){
                     Song {index+1}
                 </div>
                 <div class ="font-[DM Sans] text-anothergrey text-[15px]">
-                <strong>Title:</strong> {title} | <strong>Artist: </strong>{artist}
+                    <strong>Title:</strong> {title} | <strong>Artist: </strong>{artist}
                 </div>
         </div>
     )
