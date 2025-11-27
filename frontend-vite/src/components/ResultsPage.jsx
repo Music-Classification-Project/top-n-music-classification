@@ -21,18 +21,15 @@ export default function ResultsPage() {
     // Display predictions and recommendations
     return(
         <>
-            <NavBar />
-            <div class="flex m-10 flex-row justify-center align-center h-full w-full -z-40 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
-                <div class="flex self-center align-center w-full justify-center -z-5 inset-0 rounded-full bg-[#8E9C78]/20 size-60/100">
-                    <div class="flex flex-col mx-10 w-full">
-                        <h1 class = "flex-auto -tracking-1 leading-18 font-[DM Sans] text-black text-[60px] tracking-tight">Predictions</h1>
-                        <GenreCard predictions={predictions}/>
+            <div class="flex justify-center items-center -z-10 h-full bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
+                <div class="flex items-center justify-evenly">
+                    <div class="flex flex-col relative -z-5  rounded-full bg-midgreen/15  ">
+                            <h1 class = "absolute tracking-tight top-10 left-10 font-[DM Sans] text-black text-[65px]/20 tracking-tight">Predictions</h1>
+                            <GenreCard predictions={predictions}/>
                     </div>
-                </div>
-                <div class="flex self-center align-center justify-center w-full ">
-                    <div class="flex flex-col m-10 w-full relative ">
+                    <div class="flex flex-col relative ">
                         <RecommendationCard recommendations={recommendations.recommendations} />
-                        <p class = "absolute font-[DM Sans] right-5 bottom-0 text-black text-[60px]/20 tracking-tight">Similar Music</p>
+                        <h1 class = "absolute font-[DM Sans] right-5 bottom-0 text-black text-[65px]/20 tracking-tight">Similar Music</h1>
                     </div>
                 </div>
              </div>

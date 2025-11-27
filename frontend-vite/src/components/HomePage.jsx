@@ -8,9 +8,9 @@ import NavBar from "./NavBar"
 */
 export default function HomePage() {
 
+
 return( 
     <div class="flex -z-100 inset-0 rounded-full bg-[#bcb88a]/17 size-100/100 items-center justify-center-safe">
-      <NavBar />
       <div class="flex divide-x-3 p-20 overflow-auto">
         <div class="flex mx-3 flex-col align-center p-5 w-1/2 ">
           <h1 class = "flex-auto flex font-[DM Sans] -tracking-1 leading-18 text-left text-[90px] ">Music Classification Project.</h1>
