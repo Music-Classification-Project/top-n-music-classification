@@ -38,7 +38,7 @@ function CardValue({genre, confidence, index, color}) {
     let modifiedGenre = genre.charAt(0).toUpperCase() + genre.slice(1)
 
     return(
-            <div key={index} class="flex mx-5 text-nowrap border-b-1 border-customgrey justify-between items-center">
+            <div key={index} class="flex mx-4 text-nowrap border-b-1 border-customgrey justify-between items-center">
                 <div class="font-[DM Sans] text-anothergrey/50 text-left text-[60px]">
                     0{index+1}
                 </div>

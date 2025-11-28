@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import upload from "../assets/cloud-upload.svg";
 import { data, useNavigate } from 'react-router-dom';
-import axios from 'axios'
+import axios from 'axios';
+import { BallTriangle } from 'react-loader-spinner'
+
 
 
 function UploadElement(){
@@ -12,11 +14,32 @@ function UploadElement(){
     */
    // SET file
     const [selectedFile, setSelectedFile] = useState();
+    const [isLoading, setIsLoading] = useState(false);
     let navigate = useNavigate();
     const handleChange= (event) => {
         setSelectedFile(event.target.files[0])
     }
-  
+
+    const LoadingComponent = () => {
+    return(
+    <BallTriangle
+        height={100}
+    width={100}
+    radius={5}
+    color="#4fa94d"
+    ariaLabel="ball-triangle-loading"
+    wrapperStyle={{}}
+    wrapperClass=""
+    visible={true}
+                        />)
+}
+
+    //Action to be performed while rendering the next screen.
+    const getData = async () => {
+        setIsLoading(true)
+        await new Promise(resolve => setTimeout(resolve, 2000)); 
+        setIsLoading(false); 
+    }
 
     // Saves the file as a formdata object and submits the data to v1/genres/music 
     const handleSubmit = (event) => {
@@ -35,6 +58,7 @@ function UploadElement(){
          1. Recommendations
          2. Genres
           */
+        getData()
         axios.all([
             axios.post(`${url}/v1/genres/recommendations`, formData),
             axios.post(`${url}/v1/genres/music`, formData)
@@ -63,34 +87,30 @@ function UploadElement(){
             );
         };
     };
+
         return (
             // Upload Form
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} >
                 <fieldset>
                     <label>
-                        <div class="border-1 border-dashed border-mid green grid grid-cols-1 justify-items-center">
-                             <div class="font-[DM Sans] font-bold text-gray-800">Upload</div>
-                            <img  src={upload} class="object-scale-down cursor-pointer h-40 w-90" alt="upload icon" />
-                            <input class='cursor-pointer' type="file" id="doc" name="doc" onChange={ handleChange } hidden/>
-                            <div>Drag & drop files</div>
-                        </div>
+                    {isLoading ? (
+                        <div class='grid grid-cols-1 justify-items-center w-full h-full p-5'><LoadingComponent /><h1 class='font-bold m-2 text-15'>Loading...</h1></div>) :
+                        (<div class="border-1 border-dashed border-mid green grid grid-cols-1 justify-items-center">
+                                <div class="font-[DM Sans] font-bold text-gray-800">Upload</div>
+                                <img  src={upload} class="object-scale-down cursor-pointer h-40 w-90" alt="upload icon" />
+                                <input class='cursor-pointer' type="file" id="doc" name="doc" onChange={ handleChange } hidden/>
+                                <div>Drag & drop files</div>
+                                
+                        </div>)}
                     </label>
-
-                    <div class="py-4">
+                    <div class = "p-4">
                             {fileData()}
-                        <button
-                            class="text-white bg-midgreen rounded-sm cursor-pointer hover:bg-success-strong focus:ring-4 focus:success-subtle shadow-xs text-small  w-full py-1.5 focus:outline-none"
-                            type = "submit">
-                            UPLOAD FILE
-                        </button>
+                    <button class="text-white bg-midgreen rounded-sm cursor-pointer hover:bg-success-strong focus:ring-4 focus:success-subtle shadow-xs text-small  w-full py-1.5 focus:outline-none"
+                    type = "submit">
+                    UPLOAD FILE </button>  
                     </div>
                 </fieldset>
-            </form>
-            
+             </form>     
     )
 }
-
-
-    
-
 export default UploadElement

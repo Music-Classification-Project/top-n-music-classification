@@ -9,13 +9,13 @@ const Navbar = () => {
     */
    
     return ( 
-        <nav class="flex flex-nowrap bg-neutral-secondary-soft fixed w-full top-0 start-0 p-3">
+        <nav class="flex flex-nowrap m-5 bg-neutral-secondary-soft fixed w-full top-0 start-0 p-4">
             <div class="flex w-full items-center justify-between mx-auto p-3">
                 <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
                     <img class="h-7" src={soundWave} alt="audio wave"/>
-                    <span class="self-center text-xl text-heading font-semibold whitespace-nowrap">Top-N</span>
+                    <span class="self-center text-2xl text-heading font-semibold whitespace-nowrap">Top-N</span>
                 </a>
-                <div class="font-semibold font-display">
+                <div class="font-semibold text-xl font-display">
                     <a class="p-4">Team</a>
                     <a class="p-4">About</a>
                     <a class="p-4">Contact</a>

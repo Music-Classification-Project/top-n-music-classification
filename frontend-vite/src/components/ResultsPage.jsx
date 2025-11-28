@@ -22,12 +22,12 @@ export default function ResultsPage() {
     return(
         <>
             <div class="flex justify-center items-center -z-10 h-full bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
-                <div class="flex items-center justify-evenly">
-                    <div class="flex flex-col relative -z-5  rounded-full bg-midgreen/15  ">
+                <div class="flex items-center justify-center">
+                    <div class="flex flex-col relative -z-5 m-10 rounded-full bg-midgreen/15  ">
                             <h1 class = "absolute tracking-tight top-10 left-10 font-[DM Sans] text-black text-[65px]/20 tracking-tight">Predictions</h1>
                             <GenreCard predictions={predictions}/>
                     </div>
-                    <div class="flex flex-col relative ">
+                    <div class="flex flex-col m-10 relative ">
                         <RecommendationCard recommendations={recommendations.recommendations} />
                         <h1 class = "absolute font-[DM Sans] right-5 bottom-0 text-black text-[65px]/20 tracking-tight">Similar Music</h1>
                     </div>
