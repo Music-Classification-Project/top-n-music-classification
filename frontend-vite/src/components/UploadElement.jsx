@@ -81,7 +81,7 @@ function UploadElement(){
             else if (selectedFile && !selectedFile.type.match('audio.*')) {
                 return(
                 <div class="p-4 mb-4 text-sm text-fg-warning rounded-base bg-warning-soft" role="alert">
-                    <span class="font-medium">Wrong file type!</span> Only audio files accepted.
+                    <span class="font-medium text-red-500">Wrong file type!</span> Only audio files accepted.
                 </div>)
         }
         else {
@@ -93,21 +93,20 @@ function UploadElement(){
 
         return (
             // Upload Form
-            <form onSubmit={handleSubmit} >
+            <form onSubmit={handleSubmit} class='flex h-full items-center justify-center m-5 size-8/10'>
                 <fieldset>
-                    <div class='flex h-full flex-col align-center items-center justify-centerr'>
-                        <label >
-                            {isLoading ? (
-                            <div class='grid grid-cols-1 justify-center items-center m-4'><LoadingComponent /><h1 class='font-bold m-2 text-15'>Loading...</h1></div>) :
-                            (<div class="border-1 border-dashed border-mid green grid grid-cols-1 m-2 h-auto justify-items-center">
-                            <div class="font-[DM Sans] font-bold text-gray-800">Upload</div>
-                            <img  src={upload} class="object-scale-down cursor-pointer h-40 w-90" alt="upload icon" />
-                            <input class='cursor-pointer' type="file" id="doc" name="doc" onChange={ handleChange } hidden/>
+                    <div class='flex flex-col '>
+                        <label class='flex flex-col'>
+                            <div class="flex flex-col items-center w-full py-10 justify-center border-1 border-dashed border-midgreen ">
+                             {isLoading ? (<div class='flex flex-col items-center justify-center w-full h-full'><LoadingComponent /><h1 class='font-bold text-15'>Loading...</h1></div>) :
+                            (<><div class="font-[DM Sans] font-bold text-gray-800">Upload</div>
+                            <img  src={upload} class="object-scale-down cursor-pointer size-6/10" alt="upload icon" />
+                            <input class='cursor-pointer' type="file" id="doc" name="doc" onChange={ handleChange } hidden/></>)}
                             <div>Drag & drop files</div>    
-                            </div>)}
+                            </div>
                         </label>
-                        <div class = "grid grid-cols-1 w-auto-full m-2 h-auto">
-                            <button class="text-white bg-midgreen rounded-sm cursor-pointer hover:bg-success-strong h-full focus:ring-4 focus:success-subtle shadow-xs text-small w-full focus:outline-none"
+                        <div class = "flex flex-col my-5 w-full">
+                            <button class="text-white bg-midgreen rounded-sm cursor-pointer hover:bg-success-strong focus:ring-4 focus:success-subtle shadow-xs text-small focus:outline-none"
                             type = "submit">
                             UPLOAD FILE </button> 
                             {fileData()} 
