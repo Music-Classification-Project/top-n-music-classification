@@ -18,7 +18,7 @@ const Navbar = () => {
                 <div class="font-semibold text-xl font-display">
                     <a class="p-4">Team</a>
                     <a class="p-4">About</a>
-                    <a class="p-4">Contact</a>
+                    <a class="p-4" href='https://github.com/Music-Classification-Project/top-n-music-classification.git'>Contact</a>
                 </div>
                 <button 
                 type="button" 
