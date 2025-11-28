@@ -9,8 +9,8 @@ const Navbar = () => {
     */
    
     return ( 
-        <nav class="flex flex-nowrap m-5 bg-neutral-secondary-soft fixed w-full top-0 start-0 p-4">
-            <div class="flex w-full items-center justify-between mx-auto p-3">
+        <nav class="flex flex-nowrap bg-neutral-secondary-soft fixed w-full p-10">
+            <div class="flex w-full items-center justify-between mx-auto ">
                 <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
                     <img class="h-7" src={soundWave} alt="audio wave"/>
                     <span class="self-center text-2xl text-heading font-semibold whitespace-nowrap">Top-N</span>

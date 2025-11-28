@@ -24,15 +24,14 @@ function UploadElement(){
     return(
     <BallTriangle
         height={100}
-    width={100}
-    radius={5}
-    color="#4fa94d"
-    ariaLabel="ball-triangle-loading"
-    wrapperStyle={{}}
-    wrapperClass=""
-    visible={true}
-                        />)
-}
+        width={100}
+        radius={5}
+        color="#a98a4d79"
+        ariaLabel="ball-triangle-loading"
+        wrapperStyle={{}}
+        wrapperClass=""
+        visible={true}
+                        />)}
 
     //Action to be performed while rendering the next screen.
     const getData = async () => {
@@ -49,10 +48,7 @@ function UploadElement(){
         
         // Add File Data
         formData.append('file', selectedFile);
-        const config = {
-            headers: {
-                'content-type': 'multipart/form-data',},
-            }
+
         /* 
         SEND POST requests to /v1/genres/.. to receive: 
          1. Recommendations
@@ -74,16 +70,23 @@ function UploadElement(){
 
     // IF file is selected return file details. Else, prompt the user to select a file.
     const fileData = () => {
-        if (selectedFile) {
+        if (selectedFile && selectedFile.type.match('audio.*')) {
             return (
-                <div class ="text-left text-lightgrey">
+                <div class ="text-lightgrey">
                     <div class="font-bold">Uploaded:</div>
-                    <p class="flex border-1 border-solid border-lightgreen px-2 my-2"> {selectedFile.name} </p>
+                    <p class="flex "> {selectedFile.name} </p>
                 </div>
-            );
-        } else {
+            )} 
+            
+            else if (selectedFile && !selectedFile.type.match('audio.*')) {
+                return(
+                <div class="p-4 mb-4 text-sm text-fg-warning rounded-base bg-warning-soft" role="alert">
+                    <span class="font-medium">Wrong file type!</span> Only audio files accepted.
+                </div>)
+        }
+        else {
             return (
-                    <h4>Choose a file before selecting upload.</h4>
+                    <h4>Choose an audio file before selecting upload.</h4>
             );
         };
     };
@@ -92,22 +95,23 @@ function UploadElement(){
             // Upload Form
             <form onSubmit={handleSubmit} >
                 <fieldset>
-                    <label>
-                    {isLoading ? (
-                        <div class='grid grid-cols-1 justify-items-center w-full h-full p-5'><LoadingComponent /><h1 class='font-bold m-2 text-15'>Loading...</h1></div>) :
-                        (<div class="border-1 border-dashed border-mid green grid grid-cols-1 justify-items-center">
-                                <div class="font-[DM Sans] font-bold text-gray-800">Upload</div>
-                                <img  src={upload} class="object-scale-down cursor-pointer h-40 w-90" alt="upload icon" />
-                                <input class='cursor-pointer' type="file" id="doc" name="doc" onChange={ handleChange } hidden/>
-                                <div>Drag & drop files</div>
-                                
-                        </div>)}
-                    </label>
-                    <div class = "p-4">
-                            {fileData()}
-                    <button class="text-white bg-midgreen rounded-sm cursor-pointer hover:bg-success-strong focus:ring-4 focus:success-subtle shadow-xs text-small  w-full py-1.5 focus:outline-none"
-                    type = "submit">
-                    UPLOAD FILE </button>  
+                    <div class='flex h-full flex-col align-center items-center justify-centerr'>
+                        <label >
+                            {isLoading ? (
+                            <div class='grid grid-cols-1 justify-center items-center m-4'><LoadingComponent /><h1 class='font-bold m-2 text-15'>Loading...</h1></div>) :
+                            (<div class="border-1 border-dashed border-mid green grid grid-cols-1 m-2 h-auto justify-items-center">
+                            <div class="font-[DM Sans] font-bold text-gray-800">Upload</div>
+                            <img  src={upload} class="object-scale-down cursor-pointer h-40 w-90" alt="upload icon" />
+                            <input class='cursor-pointer' type="file" id="doc" name="doc" onChange={ handleChange } hidden/>
+                            <div>Drag & drop files</div>    
+                            </div>)}
+                        </label>
+                        <div class = "grid grid-cols-1 w-auto-full m-2 h-auto">
+                            <button class="text-white bg-midgreen rounded-sm cursor-pointer hover:bg-success-strong h-full focus:ring-4 focus:success-subtle shadow-xs text-small w-full focus:outline-none"
+                            type = "submit">
+                            UPLOAD FILE </button> 
+                            {fileData()} 
+                        </div>
                     </div>
                 </fieldset>
              </form>     
