@@ -19,7 +19,7 @@ services:
     ports:
       - "8080:8080"  # Expose Flask app on port 5000
     environment:
-      - FLASK_APP=model_interface.flask_app  # Adjust this based on your app entry point
+      - FLASK_APP=flask_app  # Adjust this based on your app entry point
     volumes:
       - ./backend:/app  # Mount backend source code for easy development
     command: flask run --host=0.0.0.0 --port=8080

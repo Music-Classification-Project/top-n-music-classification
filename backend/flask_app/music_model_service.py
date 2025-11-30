@@ -51,6 +51,8 @@ class MusicModelService:
 
         path = Path(model_path)
         if not path.exists():
+            print("Model path does not exist:", str(path))
+            print("Current Path:", os.getcwd())
             raise FileNotFoundError(str(path))
 
         try:
@@ -446,9 +448,11 @@ class DummyMusicModelService:
         return (recs_list)
 
 if __name__ == "__main__":
-    Model = MusicModelService("backend/model_interface/model/M4_82ta_0.68tl.keras")
+    Model = MusicModelService("model_interface/model/M4_82ta_0.68tl.keras")
     if Model.loaded:
         print("The model has loaded successfully\n\n")
+    else:
+        print("Model failed to load\n\n")
 
     print("Results for predict_genres():\n")
     print(Model.predict_genres("data/raw/Data/genres_original/metal/metal.00000.wav", 3))

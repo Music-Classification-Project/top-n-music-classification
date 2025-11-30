@@ -8,15 +8,15 @@ WORKDIR /app
 COPY . /app
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Set environment variables
-ENV FLASK_APP=model_interface.flask_app
-ENV FLASK_ENV=production
-ENV USE_DUMMY_SERVICE=true
+# ENV FLASK_APP=model_interface.flask_app
+# ENV FLASK_ENV=production
+# ENV USE_DUMMY_SERVICE=true
 
 # Expose the Flask port (default is 5000)
 EXPOSE 8080
 
 # Command to run the Flask app using Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "model_interface.wsgi:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "wsgi:app"]
