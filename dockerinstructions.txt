@@ -1,0 +1,11 @@
+docker-compose up --build
+
+docker tag top-n-music-classification-backend gcr.io/top-n-music-classification/backend 
+docker push gcr.io/top-n-music-classification/frontend
+docker run -p 8080:8080 gcr.io/top-n-music-classification/frontend
+gcloud run deploy vite-frontend --image gcr.io/top-n-music-classification/frontend --platform managed --region us-central1 --allow-unauthenticated
+
+docker tag top-n-music-classification-frontend gcr.io/top-n-music-classification/frontend
+docker push gcr.io/top-n-music-classification/backend
+docker run -p 8080:8080 gcr.io/top-n-music-classification-backend
+gcloud run deploy flask-backend --image gcr.io/top-n-music-classification/backend --platform managed --region us-central1 --allow-unauthenticated
