@@ -1,5 +1,5 @@
 import React from "react";
-import soundWave from "../../public/images/audio-wave.svg";
+import soundWave from "../../images/audio-wave.svg";
 
 /* Navbar Element - to be placed in header of every page. */
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import upload from "../../public/images/cloud-upload.svg";
+import upload from "../../images/cloud-upload.svg";
 import { data, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BallTriangle } from 'react-loader-spinner'
