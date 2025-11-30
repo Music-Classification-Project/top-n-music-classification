@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import upload from "../assets/cloud-upload.svg";
+import upload from "../../images/cloud-upload.svg";
 import { data, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BallTriangle } from 'react-loader-spinner'
@@ -15,6 +15,7 @@ function UploadElement(){
    // SET file
     const [selectedFile, setSelectedFile] = useState();
     const [isLoading, setIsLoading] = useState(false);
+
     let navigate = useNavigate();
     const handleChange= (event) => {
         setSelectedFile(event.target.files[0])
@@ -36,7 +37,7 @@ function UploadElement(){
     //Action to be performed while rendering the next screen.
     const getData = async () => {
         setIsLoading(true)
-        await new Promise(resolve => setTimeout(resolve, 2000)); 
+        await new Promise(resolve => setTimeout(resolve, 3000)); 
         setIsLoading(false); 
     }
 
@@ -45,6 +46,7 @@ function UploadElement(){
         event.preventDefault()
         const url =  `http://localhost:5000`;
         const formData = new FormData();
+        console.log('Selected file to be uploaded: ', selectedFile)
         
         // Add File Data
         formData.append('file', selectedFile);
@@ -67,52 +69,55 @@ function UploadElement(){
             console.log(error)
         });
         }; 
+        
 
     // IF file is selected return file details. Else, prompt the user to select a file.
     const fileData = () => {
         if (selectedFile && selectedFile.type.match('audio.*')) {
             return (
-                <div class ="text-lightgrey">
-                    <div class="font-bold">Uploaded:</div>
-                    <p class="flex "> {selectedFile.name} </p>
+                <div class='flex flex-col text-lightgrey'>
+                    <p class=" "><strong>Uploaded:</strong> {selectedFile.name} </p>
+                    <p class=" "><strong>Type:</strong> {selectedFile.type} </p>
                 </div>
             )} 
             
             else if (selectedFile && !selectedFile.type.match('audio.*')) {
                 return(
                 <div class="p-4 mb-4 text-sm text-fg-warning rounded-base bg-warning-soft" role="alert">
-                    <span class="font-medium">Wrong file type!</span> Only audio files accepted.
+                    <span class="font-medium text-red-500">Wrong file type!</span> Only audio files accepted.
                 </div>)
         }
         else {
             return (
-                    <h4>Choose an audio file before selecting upload.</h4>
+                    <h4>Select an audio file before uploading.</h4>
             );
         };
     };
 
         return (
             // Upload Form
-            <form onSubmit={handleSubmit} >
-                <fieldset>
-                    <div class='flex h-full flex-col align-center items-center justify-centerr'>
-                        <label >
-                            {isLoading ? (
-                            <div class='grid grid-cols-1 justify-center items-center m-4'><LoadingComponent /><h1 class='font-bold m-2 text-15'>Loading...</h1></div>) :
-                            (<div class="border-1 border-dashed border-mid green grid grid-cols-1 m-2 h-auto justify-items-center">
-                            <div class="font-[DM Sans] font-bold text-gray-800">Upload</div>
-                            <img  src={upload} class="object-scale-down cursor-pointer h-40 w-90" alt="upload icon" />
-                            <input class='cursor-pointer' type="file" id="doc" name="doc" onChange={ handleChange } hidden/>
+            <form onSubmit={handleSubmit} class='flex items-center justify-center items-center bg-dusty-gray/80 border h-full w-full '>
+                <fieldset class='flex  justify-center items-center size-2/3 m-25 '>
+                        <label class='flex flex-col p-3 cursor-pointer  items-center border-r-3 border-double justify-center w-1/2'>
+                                {
+                                    isLoading ? 
+                                    (<div class='flex flex-col items-center justify-center'><LoadingComponent /><h1 class='font-bold text-15'>Loading...</h1></div>) :
+                                (
+                                <>
+                                <div class="font-[DM Sans] font-bold p-3 text-gray-700">Upload</div>
+                                <img  src={upload} class='cursor-pointer w-1/2 h-1/2' alt="upload icon" />
+                                <input class='cursor-pointer' type="file" id="doc" name="doc" onChange={ handleChange } hidden/>
+                                </>
+                                )
+                                }
                             <div>Drag & drop files</div>    
-                            </div>)}
                         </label>
-                        <div class = "grid grid-cols-1 w-auto-full m-2 h-auto">
-                            <button class="text-white bg-midgreen rounded-sm cursor-pointer hover:bg-success-strong h-full focus:ring-4 focus:success-subtle shadow-xs text-small w-full focus:outline-none"
+                        <div class = "flex flex-col w-1/2 items-center justify-center  m-10 space-y-4">
+                         {fileData()} 
+                            <button class="text-white w-full bg-forest-green/70 font-bold rounded-sm cursor-pointer hover:bg-success-strong focus:ring-4 focus:success-subtle shadow-xs text-small focus:outline-none"
                             type = "submit">
                             UPLOAD FILE </button> 
-                            {fileData()} 
                         </div>
-                    </div>
                 </fieldset>
              </form>     
     )
