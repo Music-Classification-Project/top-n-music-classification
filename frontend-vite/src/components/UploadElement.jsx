@@ -45,7 +45,8 @@ function UploadElement(){
     const handleSubmit = (event) => {
         event.preventDefault()
         // const url =  `http://localhost:5000`;
-        const url = `https://flask-backend-444703047901.us-central1.run.app`;
+        // const url = `https://flask-backend-444703047901.us-central1.run.app`;
+        const url = import.meta.env.VITE_API_URL;
         const formData = new FormData();
         console.log('Selected file to be uploaded: ', selectedFile)
         
