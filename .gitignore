@@ -10,7 +10,6 @@ __pycache__/
 src/preprocess/__pycache__/
 src/preprocess/logs
 src/preprocess/final_models 
-dockerinstructions.txt
 frontend-vite/node_modules/
 sandbox/jonas/cnn_model/logs
 sandbox/jonas/cnn_model/models
