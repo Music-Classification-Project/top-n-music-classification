@@ -16,9 +16,9 @@ const Navbar = () => {
                     <span class="self-center text-2xl text-heading font-semibold whitespace-nowrap">Top-N</span>
                 </a>
                 <div class="font-semibold text-xl text-white font-display">
-                    <a class="p-4" href='/Team'>Team</a>
-                    <a class="p-4">About</a>
-                    <a class="p-4 " href="https://github.com/Music-Classification-Project/top-n-music-classification">GitHub</a>
+                    <a class="p-4 cursor-pointer" href='/Team'>Team</a>
+                    <a class="p-4 cursor-pointer">About</a>
+                    <a class="p-4 cursor-pointer" href="https://github.com/Music-Classification-Project/top-n-music-classification">GitHub</a>
                 </div>
                 <button 
                 type="button" 

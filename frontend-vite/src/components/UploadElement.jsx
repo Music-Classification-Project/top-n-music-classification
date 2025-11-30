@@ -15,6 +15,7 @@ function UploadElement(){
    // SET file
     const [selectedFile, setSelectedFile] = useState();
     const [isLoading, setIsLoading] = useState(false);
+
     let navigate = useNavigate();
     const handleChange= (event) => {
         setSelectedFile(event.target.files[0])
@@ -36,7 +37,7 @@ function UploadElement(){
     //Action to be performed while rendering the next screen.
     const getData = async () => {
         setIsLoading(true)
-        await new Promise(resolve => setTimeout(resolve, 2000)); 
+        await new Promise(resolve => setTimeout(resolve, 3000)); 
         setIsLoading(false); 
     }
 
@@ -45,6 +46,7 @@ function UploadElement(){
         event.preventDefault()
         const url =  `http://localhost:5000`;
         const formData = new FormData();
+        console.log('Selected file to be uploaded: ', selectedFile)
         
         // Add File Data
         formData.append('file', selectedFile);
@@ -67,6 +69,7 @@ function UploadElement(){
             console.log(error)
         });
         }; 
+        
 
     // IF file is selected return file details. Else, prompt the user to select a file.
     const fileData = () => {

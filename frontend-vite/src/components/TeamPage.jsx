@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function TeamPage(){
 
@@ -11,15 +12,17 @@ export default function TeamPage(){
     ];
 
 
+
     return(
-        <div class='flex items-center justify-center h-full w-full bg-[url(../../public/images/team-bg.jpg)] bg-cover bg-no-repeat '>
+        <div class='flex items-center font-[DM Sans] justify-center h-full w-full bg-[url(../../images/team-bg.jpg)] bg-cover bg-no-repeat '>
             <div class='flex items-center justify-evenly w-full bg-black/80 w-full h-auto p-10 font-[DM Sans] overflow-x-auto '>
             { memberData.map(item => (
-                <div key={item.id} class='flex flex-col justify-center items-center h-full w-full space-y-5 m-5 p-5 bg-dusty-gray/60 shadow rounded-lg'>
+                <div key={item.id}  class='flex flex-col justify-center items-center h-full w-full space-y-5 m-5 p-5 bg-dusty-gray/60 shadow rounded-lg'>
                     <img class='rounded-md border p-2' src={item.image} />
                     <div class='flex flex-col items-center p-3 text-center justify-center font-[DM Sans] flex-nowrap'> 
                         <h1 class='font-bold text-4xl'>{item.name}</h1>
-                        <p ><strong>Github: </strong>{item.github} </p>
+                        <p><strong>Github: </strong><a href={item.github}>{item.github}</a></p>
+            
                 </div>
                 </div> 
                 
