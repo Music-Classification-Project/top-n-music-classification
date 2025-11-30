@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import upload from "../assets/cloud-upload.svg";
+import upload from "../../public/images/cloud-upload.svg";
 import { data, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BallTriangle } from 'react-loader-spinner'
@@ -72,9 +72,9 @@ function UploadElement(){
     const fileData = () => {
         if (selectedFile && selectedFile.type.match('audio.*')) {
             return (
-                <div class ="text-lightgrey">
-                    <div class="font-bold">Uploaded:</div>
-                    <p class="flex "> {selectedFile.name} </p>
+                <div class='flex flex-col text-lightgrey'>
+                    <p class=" "><strong>Uploaded:</strong> {selectedFile.name} </p>
+                    <p class=" "><strong>Type:</strong> {selectedFile.type} </p>
                 </div>
             )} 
             
@@ -86,32 +86,35 @@ function UploadElement(){
         }
         else {
             return (
-                    <h4>Choose an audio file before selecting upload.</h4>
+                    <h4>Select an audio file before uploading.</h4>
             );
         };
     };
 
         return (
             // Upload Form
-            <form onSubmit={handleSubmit} class='flex h-full items-center justify-center m-5 size-8/10'>
-                <fieldset>
-                    <div class='flex flex-col '>
-                        <label class='flex flex-col'>
-                            <div class="flex flex-col items-center w-full py-10 justify-center border-1 border-dashed border-midgreen ">
-                             {isLoading ? (<div class='flex flex-col items-center justify-center w-full h-full'><LoadingComponent /><h1 class='font-bold text-15'>Loading...</h1></div>) :
-                            (<><div class="font-[DM Sans] font-bold text-gray-800">Upload</div>
-                            <img  src={upload} class="object-scale-down cursor-pointer size-6/10" alt="upload icon" />
-                            <input class='cursor-pointer' type="file" id="doc" name="doc" onChange={ handleChange } hidden/></>)}
+            <form onSubmit={handleSubmit} class='flex items-center justify-center items-center bg-dusty-gray/80 border h-full w-full '>
+                <fieldset class='flex  justify-center items-center size-2/3 m-25 '>
+                        <label class='flex flex-col p-3 cursor-pointer  items-center border-r-3 border-double justify-center w-1/2'>
+                                {
+                                    isLoading ? 
+                                    (<div class='flex flex-col items-center justify-center'><LoadingComponent /><h1 class='font-bold text-15'>Loading...</h1></div>) :
+                                (
+                                <>
+                                <div class="font-[DM Sans] font-bold p-3 text-gray-700">Upload</div>
+                                <img  src={upload} class='cursor-pointer w-1/2 h-1/2' alt="upload icon" />
+                                <input class='cursor-pointer' type="file" id="doc" name="doc" onChange={ handleChange } hidden/>
+                                </>
+                                )
+                                }
                             <div>Drag & drop files</div>    
-                            </div>
                         </label>
-                        <div class = "flex flex-col my-5 w-full">
-                            <button class="text-white bg-midgreen rounded-sm cursor-pointer hover:bg-success-strong focus:ring-4 focus:success-subtle shadow-xs text-small focus:outline-none"
+                        <div class = "flex flex-col w-1/2 items-center justify-center  m-10 space-y-4">
+                         {fileData()} 
+                            <button class="text-white w-full bg-forest-green/70 font-bold rounded-sm cursor-pointer hover:bg-success-strong focus:ring-4 focus:success-subtle shadow-xs text-small focus:outline-none"
                             type = "submit">
                             UPLOAD FILE </button> 
-                            {fileData()} 
                         </div>
-                    </div>
                 </fieldset>
              </form>     
     )
