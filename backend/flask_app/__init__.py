@@ -7,7 +7,7 @@ from flask_cors import CORS
 # Import the service layer
 try:
     # If package import path works
-    from backend.model_interface.music_model_service import (
+    from .music_model_service import (
         MusicModelService,
         DummyMusicModelService,
     )
@@ -19,10 +19,20 @@ except Exception:  # fallback if import path differs during dev
 
 
 # Default model aligned with extract_features.py config (mel spectrograms)
-DEFAULT_MODEL_PATH = os.path.join(
-    os.getcwd(), "backend", "model_interface", "model", "M4_82ta_0.68tl.keras"
-)
+# DEFAULT_MODEL_PATH = os.path.join(
+#     os.getcwd(), "backend", "model_interface", "model", "M4_82ta_0.68tl.keras"
+# )
+# Get the directory where this script is located
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
+# Change the current working directory to the script's directory
+os.chdir(script_dir)
+
+# Now all relative paths are relative to the script's folder
+print("Current working directory:", os.getcwd())
+
+DEFAULT_MODEL_PATH = os.path.join("model_interface/model/M4_82ta_0.68tl.keras")
+print(f"Default model path set to: {DEFAULT_MODEL_PATH}")
 
 def _register_error_handlers(app: Flask) -> None:
     @app.errorhandler(400)
@@ -363,9 +373,11 @@ def create_app(test_config=None):
         service = DummyMusicModelService(model_path)
     else:
         try:
+            print(model_path)
             service = MusicModelService(model_path)
         except Exception:
             # Fallback to dummy if load fails; log minimal info
+            print("Warning: Failed to load MusicModelService, falling back to DummyMusicModelService.")
             service = DummyMusicModelService(model_path)
     app.config["SERVICE"] = service
 
